@@ -65,7 +65,6 @@ Task: Phase 1, Session 3.
    - forCurious: conceptual explanation with the aha moment
    - forEngineers: algorithm description, time complexity, optimization path
    - concepts: array of concept tags (e.g. Emergence, Self-organization)
-   - interviewAngle: one paragraph on how to speak about this system in a technical interview
 
 2. Create src/components/TheoryPanel.jsx — displays content from systemContent.js for the active system. Three audience tabs: Everyone / Curious / Engineers. Concept tags displayed as pills. Clean readable typography.
 

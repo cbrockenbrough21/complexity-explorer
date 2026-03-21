@@ -1,0 +1,27 @@
+.wrapper {
+  border: 1px solid #61543f;
+  background: rgba(20, 18, 15, 0.72);
+  border-radius: 12px;
+  padding: 12px;
+}
+
+.counter {
+  margin: 0 0 10px;
+  color: #ddcfb5;
+  font-size: 0.92rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.counterStrong {
+  color: #f9e7c6;
+  font-weight: 700;
+}
+
+.canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid #645640;
+  border-radius: 8px;
+  background: #0d0f14;
+}

@@ -1,10 +1,28 @@
 import { LSystem } from "../systems/LSystem.js";
+import styles from "./Controls.module.css";
 
-function NumberSlider({ label, value, min, max, step = 1, onChange }) {
+function NumberSlider({
+  label,
+  value,
+  min,
+  max,
+  step = 1,
+  unit = "",
+  formatValue,
+  onChange
+}) {
+  const displayedValue = formatValue
+    ? formatValue(value)
+    : Number(value).toFixed(step < 1 ? 2 : 0);
+
   return (
-    <label style={{ display: "grid", gap: 4 }}>
-      <span>{label}: {Number(value).toFixed(step < 1 ? 3 : 0)}</span>
+    <label className={styles.field}>
+      <span className={styles.fieldLabelRow}>
+        <span>{label}</span>
+        <span className={styles.value}>{displayedValue}{unit}</span>
+      </span>
       <input
+        className={styles.input}
         type="range"
         min={min}
         max={max}
@@ -26,23 +44,49 @@ export default function Controls({ systemKey, config, onConfigChange }) {
 
   if (systemKey === "gameOfLife") {
     return (
-      <div style={{ display: "grid", gap: 8 }}>
-        <NumberSlider label="Initial density" value={config.initialDensity} min={0.05} max={0.9} step={0.01} onChange={(v) => apply({ initialDensity: v })} />
-        <NumberSlider label="Steps per second" value={config.stepsPerSecond} min={1} max={30} step={1} onChange={(v) => apply({ stepsPerSecond: v })} />
-        <button type="button" onClick={() => apply({})}>Randomize</button>
+      <div className={styles.controlStack}>
+        <NumberSlider
+          label="Initial Density"
+          value={config.initialDensity}
+          min={0.05}
+          max={0.7}
+          step={0.01}
+          unit="%"
+          formatValue={(v) => Math.round(v * 100)}
+          onChange={(v) => apply({ initialDensity: v })}
+        />
+        <NumberSlider
+          label="Grid Cell Size"
+          value={config.cellSize}
+          min={4}
+          max={14}
+          step={1}
+          unit=" px"
+          onChange={(v) => apply({ cellSize: v })}
+        />
+        <NumberSlider
+          label="Simulation Rate"
+          value={config.stepsPerSecond}
+          min={1}
+          max={30}
+          step={1}
+          unit=" Hz"
+          onChange={(v) => apply({ stepsPerSecond: v })}
+        />
+        <button className={styles.actionButton} type="button" onClick={() => apply({})}>Randomize Seed</button>
       </div>
     );
   }
 
   if (systemKey === "reactionDiffusion") {
     return (
-      <div style={{ display: "grid", gap: 8 }}>
-        <NumberSlider label="Feed (f)" value={config.feed} min={0.01} max={0.1} step={0.001} onChange={(v) => apply({ feed: v })} />
-        <NumberSlider label="Kill (k)" value={config.kill} min={0.01} max={0.09} step={0.001} onChange={(v) => apply({ kill: v })} />
-        <NumberSlider label="Diffusion A" value={config.dA} min={0.1} max={1.5} step={0.01} onChange={(v) => apply({ dA: v })} />
-        <NumberSlider label="Diffusion B" value={config.dB} min={0.1} max={1.2} step={0.01} onChange={(v) => apply({ dB: v })} />
-        <NumberSlider label="Steps per frame" value={config.stepsPerFrame} min={1} max={20} step={1} onChange={(v) => apply({ stepsPerFrame: v })} />
-        <button type="button" onClick={() => apply({})}>Reseed</button>
+      <div className={styles.controlStack}>
+        <NumberSlider label="Feed Rate (f)" value={config.feed} min={0.01} max={0.09} step={0.001} onChange={(v) => apply({ feed: v })} />
+        <NumberSlider label="Kill Rate (k)" value={config.kill} min={0.03} max={0.075} step={0.001} onChange={(v) => apply({ kill: v })} />
+        <NumberSlider label="Diffusion A" value={config.dA} min={0.4} max={1.6} step={0.01} onChange={(v) => apply({ dA: v })} />
+        <NumberSlider label="Diffusion B" value={config.dB} min={0.2} max={1.2} step={0.01} onChange={(v) => apply({ dB: v })} />
+        <NumberSlider label="Micro-Steps / Frame" value={config.stepsPerFrame} min={1} max={16} step={1} onChange={(v) => apply({ stepsPerFrame: v })} />
+        <button className={styles.actionButton} type="button" onClick={() => apply({})}>Reseed Patches</button>
       </div>
     );
   }
@@ -51,10 +95,11 @@ export default function Controls({ systemKey, config, onConfigChange }) {
     const presetMeta = LSystem.getPresetMeta(config.preset);
 
     return (
-      <div style={{ display: "grid", gap: 8 }}>
-        <label style={{ display: "grid", gap: 4 }}>
+      <div className={styles.controlStack}>
+        <label className={styles.field}>
           <span>Preset</span>
           <select
+            className={styles.select}
             value={config.preset}
             onChange={(e) => {
               const nextPreset = e.target.value;
@@ -71,21 +116,26 @@ export default function Controls({ systemKey, config, onConfigChange }) {
             ))}
           </select>
         </label>
+        <p className={styles.presetMeta}>Max iterations for this preset: {presetMeta.maxIterations}</p>
         <NumberSlider label="Iterations" value={config.iterations} min={1} max={presetMeta.maxIterations} step={1} onChange={(v) => apply({ iterations: v })} />
-        <NumberSlider label="Angle" value={config.angle} min={5} max={180} step={1} onChange={(v) => apply({ angle: v })} />
-        <button type="button" onClick={() => apply({})}>Regenerate</button>
+        <NumberSlider label="Turn Angle" value={config.angle} min={5} max={170} step={1} unit=" deg" onChange={(v) => apply({ angle: v })} />
+        <button className={styles.actionButton} type="button" onClick={() => apply({})}>Regenerate</button>
       </div>
     );
   }
 
   return (
-    <div style={{ display: "grid", gap: 8 }}>
-      <NumberSlider label="Agent count" value={config.agentCount} min={10} max={200} step={1} onChange={(v) => apply({ agentCount: v })} />
-      <NumberSlider label="Max speed" value={config.maxSpeed} min={0.5} max={6} step={0.1} onChange={(v) => apply({ maxSpeed: v })} />
-      <NumberSlider label="Separation radius" value={config.separationRadius} min={5} max={80} step={1} onChange={(v) => apply({ separationRadius: v })} />
-      <NumberSlider label="Alignment radius" value={config.alignmentRadius} min={5} max={120} step={1} onChange={(v) => apply({ alignmentRadius: v })} />
-      <NumberSlider label="Cohesion radius" value={config.cohesionRadius} min={5} max={120} step={1} onChange={(v) => apply({ cohesionRadius: v })} />
-      <button type="button" onClick={() => apply({})}>Reset flock</button>
+    <div className={styles.controlStack}>
+      <NumberSlider label="Agent Count" value={config.agentCount} min={20} max={220} step={1} onChange={(v) => apply({ agentCount: v })} />
+      <NumberSlider label="Simulation Rate" value={config.stepsPerSecond} min={20} max={120} step={1} unit=" Hz" onChange={(v) => apply({ stepsPerSecond: v })} />
+      <NumberSlider label="Max Speed" value={config.maxSpeed} min={0.5} max={4.5} step={0.1} unit=" px/tick" onChange={(v) => apply({ maxSpeed: v })} />
+      <NumberSlider label="Separation Radius" value={config.separationRadius} min={8} max={90} step={1} unit=" px" onChange={(v) => apply({ separationRadius: v })} />
+      <NumberSlider label="Alignment Radius" value={config.alignmentRadius} min={12} max={130} step={1} unit=" px" onChange={(v) => apply({ alignmentRadius: v })} />
+      <NumberSlider label="Cohesion Radius" value={config.cohesionRadius} min={12} max={130} step={1} unit=" px" onChange={(v) => apply({ cohesionRadius: v })} />
+      <NumberSlider label="Separation Weight" value={config.separationWeight} min={0.2} max={3.2} step={0.1} onChange={(v) => apply({ separationWeight: v })} />
+      <NumberSlider label="Alignment Weight" value={config.alignmentWeight} min={0.2} max={3.2} step={0.1} onChange={(v) => apply({ alignmentWeight: v })} />
+      <NumberSlider label="Cohesion Weight" value={config.cohesionWeight} min={0.2} max={3.2} step={0.1} onChange={(v) => apply({ cohesionWeight: v })} />
+      <button className={styles.actionButton} type="button" onClick={() => apply({})}>Reset Flock</button>
     </div>
   );
 }

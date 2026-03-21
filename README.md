@@ -21,7 +21,7 @@ Built as a personal project to understand, visualize, and share the beauty of em
 
 ## Project phases
 
-- **Phase 1** — Interactive explorer with theory panel `[ ]`
+- **Phase 1** — Interactive explorer with theory panel `[x]`
 - **Phase 2** — Downloadable high-resolution art prints `[ ]`
 - **Phase 3** — Website with philosophical and technical explanations `[ ]`
 - **Phase 4** — Raspberry Pi ambient display mode `[ ]`

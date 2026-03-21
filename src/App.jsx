@@ -1,10 +1,12 @@
 import { useMemo, useRef, useState } from "react";
 import SimulationView from "./components/SimulationView.jsx";
 import Controls from "./components/Controls.jsx";
+import TheoryPanel from "./components/TheoryPanel.jsx";
 import { GameOfLife } from "./systems/GameOfLife.js";
 import { ReactionDiffusion } from "./systems/ReactionDiffusion.js";
 import { LSystem } from "./systems/LSystem.js";
 import { Boids } from "./systems/Boids.js";
+import styles from "./App.module.css";
 
 const SYSTEMS = {
   gameOfLife: {
@@ -83,46 +85,51 @@ export default function App() {
   };
 
   return (
-    <main style={{ padding: 16, fontFamily: "ui-sans-serif, system-ui, sans-serif", color: "#e2e8f0", background: "#0f172a", minHeight: "100vh" }}>
-      <h1 style={{ marginTop: 0 }}>Complexity Explorer</h1>
+    <main className={styles.appShell}>
+      <header className={styles.header}>
+        <h1 className={styles.title}>Complexity Explorer</h1>
+        <p className={styles.subtitle}>
+          Watch simple rules become rich, surprising behavior. Tune each system,
+          compare dynamics, and read each layer from poetic intuition to
+          algorithmic detail.
+        </p>
+      </header>
 
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
+      <div className={styles.systemTabs}>
         {Object.entries(SYSTEMS).map(([key, system]) => (
           <button
             key={key}
             type="button"
             onClick={() => setActiveKey(key)}
-            style={{
-              border: "1px solid #334155",
-              background: activeKey === key ? "#1e293b" : "#0b1220",
-              color: "#e2e8f0",
-              padding: "8px 12px",
-              cursor: "pointer"
-            }}
+            className={`${styles.tabButton} ${activeKey === key ? styles.tabButtonActive : ""}`}
           >
             {system.label}
           </button>
         ))}
       </div>
 
-      <div style={{ display: "grid", gap: 16, gridTemplateColumns: "minmax(280px, 1fr) 320px", alignItems: "start" }}>
-        <SimulationView
-          key={activeKey}
-          systemClass={activeSystem.classRef}
-          initialConfig={configs[activeKey]}
-          onSystemReady={(_, api) => {
-            activeApiRef.current = api;
-          }}
-        />
-
-        <section style={{ border: "1px solid #334155", padding: 12 }}>
-          <h2 style={{ marginTop: 0, marginBottom: 12, fontSize: 18 }}>{activeSystem.label} Controls</h2>
-          <Controls
-            systemKey={activeKey}
-            config={configs[activeKey]}
-            onConfigChange={handleConfigChange}
+      <div className={styles.layout}>
+        <section className={styles.leftColumn}>
+          <SimulationView
+            key={activeKey}
+            systemClass={activeSystem.classRef}
+            initialConfig={configs[activeKey]}
+            onSystemReady={(_, api) => {
+              activeApiRef.current = api;
+            }}
           />
+
+          <section className={styles.controlsPanel}>
+            <h2 className={styles.controlsHeading}>{activeSystem.label} Controls</h2>
+            <Controls
+              systemKey={activeKey}
+              config={configs[activeKey]}
+              onConfigChange={handleConfigChange}
+            />
+          </section>
         </section>
+
+        <TheoryPanel systemKey={activeKey} />
       </div>
     </main>
   );

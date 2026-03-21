@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CanvasRenderer } from "../renderer/CanvasRenderer.js";
+import styles from "./SimulationView.module.css";
 
 /**
  * Hosts a simulation strategy and renders it to a canvas.
@@ -7,6 +8,9 @@ import { CanvasRenderer } from "../renderer/CanvasRenderer.js";
  */
 export default function SimulationView({ systemClass, initialConfig = {}, onSystemReady }) {
   const canvasRef = useRef(null);
+  const frameRef = useRef(0);
+  const generationRef = useRef(0);
+  const [counter, setCounter] = useState({ frame: 0, generation: 0 });
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -16,12 +20,18 @@ export default function SimulationView({ systemClass, initialConfig = {}, onSyst
 
     const system = new systemClass(initialConfig);
     applyCanvasSize(canvas, system.config);
+    frameRef.current = 0;
+    generationRef.current = 0;
+    setCounter({ frame: 0, generation: 0 });
 
     if (typeof onSystemReady === "function") {
       onSystemReady(system, {
         applyConfig: (config) => {
           system.init(config);
           applyCanvasSize(canvas, system.config);
+          frameRef.current = 0;
+          generationRef.current = 0;
+          setCounter({ frame: 0, generation: 0 });
         }
       });
     }
@@ -35,20 +45,29 @@ export default function SimulationView({ systemClass, initialConfig = {}, onSyst
     const animate = (timestamp) => {
       const delta = timestamp - lastTime;
       lastTime = timestamp;
+      let stepsAdvanced = 0;
 
       const stepsPerSecond = system.config?.stepsPerSecond ?? 60;
       if (stepsPerSecond >= 60) {
         system.step();
+        stepsAdvanced = 1;
       } else {
         const stepMs = 1000 / stepsPerSecond;
         accumulator += delta;
         while (accumulator >= stepMs) {
           system.step();
           accumulator -= stepMs;
+          stepsAdvanced += 1;
         }
       }
 
       renderer.render();
+      frameRef.current += 1;
+      generationRef.current += stepsAdvanced;
+      setCounter({
+        frame: frameRef.current,
+        generation: generationRef.current
+      });
       rafId = requestAnimationFrame(animate);
     };
 
@@ -61,7 +80,16 @@ export default function SimulationView({ systemClass, initialConfig = {}, onSyst
     };
   }, [systemClass]);
 
-  return <canvas ref={canvasRef} style={{ maxWidth: "100%", height: "auto", border: "1px solid #334155" }} />;
+  return (
+    <section className={styles.wrapper}>
+      <p className={styles.counter}>
+        Frame: <span className={styles.counterStrong}>{counter.frame}</span>
+        {" | "}
+        Generation: <span className={styles.counterStrong}>{counter.generation}</span>
+      </p>
+      <canvas ref={canvasRef} className={styles.canvas} />
+    </section>
+  );
 }
 
 function applyCanvasSize(canvas, config = {}) {

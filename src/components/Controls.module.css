@@ -1,0 +1,50 @@
+.controlStack {
+  display: grid;
+  gap: 10px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.fieldLabelRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 0.92rem;
+}
+
+.value {
+  color: #ccbfa7;
+  font-variant-numeric: tabular-nums;
+}
+
+.input {
+  width: 100%;
+}
+
+.select {
+  width: 100%;
+  background: #1f1b15;
+  color: #f6eddc;
+  border: 1px solid #685a44;
+  border-radius: 8px;
+  padding: 7px 8px;
+}
+
+.actionButton {
+  border: 1px solid #927957;
+  background: #2e2618;
+  color: #f2e5cd;
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.presetMeta {
+  margin: 0;
+  color: #d4c7af;
+  font-size: 0.85rem;
+}
