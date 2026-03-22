@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from "react";
 import SimulationView from "./components/SimulationView.jsx";
 import Controls from "./components/Controls.jsx";
 import TheoryPanel from "./components/TheoryPanel.jsx";
+import CaptureButton from "./components/CaptureButton.jsx";
 import { GameOfLife } from "./systems/GameOfLife.js";
 import { ReactionDiffusion } from "./systems/ReactionDiffusion.js";
 import { LSystem } from "./systems/LSystem.js";
@@ -74,6 +75,7 @@ export default function App() {
   }));
 
   const activeApiRef = useRef(null);
+  const [simulationApi, setSimulationApi] = useState(null);
 
   const activeSystem = useMemo(() => SYSTEMS[activeKey], [activeKey]);
 
@@ -100,7 +102,10 @@ export default function App() {
           <button
             key={key}
             type="button"
-            onClick={() => setActiveKey(key)}
+            onClick={() => {
+              setActiveKey(key);
+              setSimulationApi(null);
+            }}
             className={`${styles.tabButton} ${activeKey === key ? styles.tabButtonActive : ""}`}
           >
             {system.label}
@@ -110,12 +115,18 @@ export default function App() {
 
       <div className={styles.layout}>
         <section className={styles.leftColumn}>
+          <CaptureButton
+            simulationApi={simulationApi}
+            systemName={activeSystem.label}
+          />
+
           <SimulationView
             key={activeKey}
             systemClass={activeSystem.classRef}
             initialConfig={configs[activeKey]}
             onSystemReady={(_, api) => {
               activeApiRef.current = api;
+              setSimulationApi(api);
             }}
           />
 

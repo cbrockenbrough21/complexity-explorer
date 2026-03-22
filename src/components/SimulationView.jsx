@@ -10,6 +10,7 @@ export default function SimulationView({ systemClass, initialConfig = {}, onSyst
   const canvasRef = useRef(null);
   const frameRef = useRef(0);
   const generationRef = useRef(0);
+  const pausedRef = useRef(false);
   const [counter, setCounter] = useState({ frame: 0, generation: 0 });
 
   useEffect(() => {
@@ -22,6 +23,7 @@ export default function SimulationView({ systemClass, initialConfig = {}, onSyst
     applyCanvasSize(canvas, system.config);
     frameRef.current = 0;
     generationRef.current = 0;
+    pausedRef.current = false;
     setCounter({ frame: 0, generation: 0 });
 
     if (typeof onSystemReady === "function") {
@@ -32,7 +34,16 @@ export default function SimulationView({ systemClass, initialConfig = {}, onSyst
           frameRef.current = 0;
           generationRef.current = 0;
           setCounter({ frame: 0, generation: 0 });
-        }
+        },
+        pause: () => {
+          pausedRef.current = true;
+        },
+        resume: () => {
+          pausedRef.current = false;
+        },
+        getSystem: () => system,
+        getGeneration: () => generationRef.current,
+        getFrame: () => frameRef.current
       });
     }
 
@@ -43,6 +54,12 @@ export default function SimulationView({ systemClass, initialConfig = {}, onSyst
     let accumulator = 0;
 
     const animate = (timestamp) => {
+      if (pausedRef.current) {
+        lastTime = timestamp;
+        rafId = requestAnimationFrame(animate);
+        return;
+      }
+
       const delta = timestamp - lastTime;
       lastTime = timestamp;
       let stepsAdvanced = 0;

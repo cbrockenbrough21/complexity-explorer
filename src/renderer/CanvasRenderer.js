@@ -94,7 +94,15 @@ export class CanvasRenderer {
       imageData.data[idx + 3] = 255;
     }
 
-    this.ctx.putImageData(imageData, 0, 0);
+    // Draw at simulation resolution first, then scale to output canvas.
+    const sourceCanvas = document.createElement("canvas");
+    sourceCanvas.width = width;
+    sourceCanvas.height = height;
+    const sourceCtx = sourceCanvas.getContext("2d");
+    sourceCtx.putImageData(imageData, 0, 0);
+
+    this.ctx.imageSmoothingEnabled = false;
+    this.ctx.drawImage(sourceCanvas, 0, 0, this.canvas.width, this.canvas.height);
   }
 
   #drawLSystem(state) {
@@ -108,10 +116,14 @@ export class CanvasRenderer {
     } = drawParams;
     const isAlgae = drawParams.preset === "Algae";
 
+    const simulationWidth = this.system?.config?.width ?? this.canvas.width;
+    const scale = simulationWidth > 0 ? this.canvas.width / simulationWidth : 1;
+    const scaledStepLength = stepLength * scale;
+
     this.ctx.fillStyle = "#0b1020";
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.strokeStyle = "#9ae6b4";
-    this.ctx.lineWidth = 1;
+    this.ctx.lineWidth = Math.max(1, scale);
 
     let x = startX * this.canvas.width;
     let y = startY * this.canvas.height;
@@ -128,8 +140,8 @@ export class CanvasRenderer {
       const c = string[i];
 
       if (c === "F" || c === "G" || c === "A" || c === "B") {
-        const nx = x + Math.cos(heading) * stepLength;
-        const ny = y + Math.sin(heading) * stepLength;
+        const nx = x + Math.cos(heading) * scaledStepLength;
+        const ny = y + Math.sin(heading) * scaledStepLength;
         this.ctx.lineTo(nx, ny);
         x = nx;
         y = ny;
@@ -175,15 +187,24 @@ export class CanvasRenderer {
     this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.fillStyle = "#f8fafc";
 
+    const simulationWidth = this.system?.config?.width ?? this.canvas.width;
+    const simulationHeight = this.system?.config?.height ?? this.canvas.height;
+    const scaleX = simulationWidth > 0 ? this.canvas.width / simulationWidth : 1;
+    const scaleY = simulationHeight > 0 ? this.canvas.height / simulationHeight : 1;
+    const shapeScale = Math.min(scaleX, scaleY);
+    const nose = 8 * shapeScale;
+    const tail = 6 * shapeScale;
+    const halfTailHeight = 4 * shapeScale;
+
     for (const boid of state) {
       const angle = Math.atan2(boid.vy, boid.vx);
       this.ctx.save();
-      this.ctx.translate(boid.x, boid.y);
+      this.ctx.translate(boid.x * scaleX, boid.y * scaleY);
       this.ctx.rotate(angle);
       this.ctx.beginPath();
-      this.ctx.moveTo(8, 0);
-      this.ctx.lineTo(-6, -4);
-      this.ctx.lineTo(-6, 4);
+      this.ctx.moveTo(nose, 0);
+      this.ctx.lineTo(-tail, -halfTailHeight);
+      this.ctx.lineTo(-tail, halfTailHeight);
       this.ctx.closePath();
       this.ctx.fill();
       this.ctx.restore();
