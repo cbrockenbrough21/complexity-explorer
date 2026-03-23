@@ -1,36 +1,196 @@
 .page {
+  --paper: #f8f2e3;
+  --ink: #20170f;
+  --muted-ink: #5e4a39;
+  --line: #d7c7ad;
+  --accent: #2f6a67;
+  --accent-strong: #23514f;
+
   min-height: calc(100vh - 66px);
-  display: grid;
-  place-items: center;
-  padding: 24px;
-  background: linear-gradient(180deg, #101921 0%, #15120f 100%);
-  color: #efe5d2;
-  font-family: "Avenir Next", "Segoe UI", "Trebuchet MS", sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 10% 0%, rgba(244, 232, 203, 0.28), transparent 38%),
+    radial-gradient(circle at 85% 8%, rgba(170, 201, 185, 0.18), transparent 42%),
+    linear-gradient(180deg, #f9f6ef 0%, #efe3cb 100%);
 }
 
-.panel {
-  width: min(760px, 100%);
-  border: 1px solid #534737;
-  border-radius: 14px;
-  padding: 24px;
-  background: rgba(19, 17, 13, 0.74);
+.hero {
+  position: relative;
+  min-height: 62vh;
+  width: 100%;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(98, 78, 51, 0.35);
+}
+
+.heroCanvas {
+  display: block;
+  width: 100%;
+  height: 62vh;
+  min-height: 360px;
+  background: #0d121b;
+}
+
+.heroScrim {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(120deg, rgba(8, 15, 22, 0.7) 0%, rgba(8, 15, 22, 0.18) 58%, rgba(8, 15, 22, 0.08) 100%),
+    linear-gradient(180deg, rgba(5, 8, 12, 0.22) 0%, rgba(5, 8, 12, 0.48) 100%);
+}
+
+.heroContent {
+  position: absolute;
+  left: clamp(1rem, 4vw, 4.5rem);
+  bottom: clamp(1rem, 4vw, 3rem);
+  max-width: min(720px, 90vw);
+  color: #fff7e9;
+  z-index: 1;
+}
+
+.kicker {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.11em;
+  font-size: 0.76rem;
+  color: #e8d6b5;
 }
 
 .title {
-  margin: 0;
-  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  margin: 8px 0 0;
+  font-size: clamp(1.9rem, 4.9vw, 4rem);
+  line-height: 1.05;
+  font-family: "Avenir Next", "Gill Sans", "Trebuchet MS", sans-serif;
 }
 
-.body {
+.tagline {
   margin: 12px 0 0;
-  color: #d7cab1;
+  max-width: 58ch;
+  color: #f2e2c3;
   line-height: 1.5;
+  font-size: clamp(0.98rem, 1.4vw, 1.14rem);
 }
 
-.link {
+.heroTags {
   margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.heroTagPill {
+  border-radius: 999px;
+  border: 1px solid rgba(255, 246, 228, 0.64);
+  background: rgba(18, 36, 44, 0.44);
+  padding: 4px 11px;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+}
+
+.sectionCard {
+  width: min(1060px, calc(100% - 2rem));
+  margin: 1.25rem auto;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(255, 252, 245, 0.82);
+  backdrop-filter: blur(2px);
+  box-shadow: 0 14px 35px rgba(34, 24, 13, 0.08);
+  padding: clamp(1rem, 2.4vw, 1.5rem);
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: clamp(1.1rem, 2.2vw, 1.4rem);
+  color: var(--ink);
+}
+
+.sectionBody {
+  margin: 10px 0 14px;
+  color: var(--muted-ink);
+  line-height: 1.55;
+}
+
+.nextSection {
+  margin-bottom: 2.2rem;
+  text-align: center;
+  background:
+    linear-gradient(130deg, rgba(248, 239, 220, 0.9) 0%, rgba(231, 245, 237, 0.72) 100%);
+}
+
+.nextLabel {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.75rem;
+  color: #705b40;
+}
+
+.nextLink {
+  display: inline-flex;
+  margin-top: 8px;
+  text-decoration: none;
+  color: var(--accent);
+  font-size: clamp(1.2rem, 2.2vw, 1.5rem);
+  font-weight: 700;
+}
+
+.nextLink:hover {
+  color: var(--accent-strong);
+}
+
+.nextHint {
+  margin: 8px 0 0;
+  color: #65513e;
+}
+
+.revealBase {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+
+.revealVisible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.notFoundPanel {
+  margin: 3rem auto;
+  width: min(760px, calc(100% - 2rem));
+  border: 1px solid #ccb89a;
+  border-radius: 14px;
+  padding: 1.25rem;
+  background: rgba(255, 249, 236, 0.88);
+}
+
+.notFoundTitle {
+  margin: 0;
+  color: #2a1f13;
+}
+
+.notFoundBody {
+  margin: 10px 0 0;
+  color: #5d4a39;
+}
+
+.returnLink {
+  margin-top: 14px;
   display: inline-flex;
   text-decoration: none;
-  color: #f3c67f;
+  color: var(--accent);
   font-weight: 700;
+}
+
+@media (max-width: 720px) {
+  .hero {
+    min-height: 52vh;
+  }
+
+  .heroCanvas {
+    height: 52vh;
+    min-height: 300px;
+  }
+
+  .heroContent {
+    max-width: 94vw;
+  }
 }
