@@ -1,0 +1,36 @@
+.page {
+  min-height: calc(100vh - 66px);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: linear-gradient(180deg, #101921 0%, #15120f 100%);
+  color: #efe5d2;
+  font-family: "Avenir Next", "Segoe UI", "Trebuchet MS", sans-serif;
+}
+
+.panel {
+  width: min(760px, 100%);
+  border: 1px solid #534737;
+  border-radius: 14px;
+  padding: 24px;
+  background: rgba(19, 17, 13, 0.74);
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+}
+
+.body {
+  margin: 12px 0 0;
+  color: #d7cab1;
+  line-height: 1.5;
+}
+
+.link {
+  margin-top: 16px;
+  display: inline-flex;
+  text-decoration: none;
+  color: #f3c67f;
+  font-weight: 700;
+}
