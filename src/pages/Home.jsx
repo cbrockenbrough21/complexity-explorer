@@ -6,6 +6,15 @@ import { systemContent } from "../data/systemContent.js";
 import styles from "./Home.module.css";
 
 const HERO_SYSTEM = SYSTEMS.reactionDiffusion;
+const HERO_CONFIG = {
+  ...HERO_SYSTEM.defaultConfig,
+  width: 480,
+  height: 300,
+  feed: 0.053,
+  kill: 0.061,
+  stepsPerFrame: 10,
+  stepsPerSecond: 30
+};
 
 export default function Home() {
   const cards = useMemo(() => {
@@ -61,19 +70,9 @@ function HeroBackground() {
       return undefined;
     }
 
-    const system = new HERO_SYSTEM.classRef(HERO_SYSTEM.defaultConfig);
+    const system = new HERO_SYSTEM.classRef(HERO_CONFIG);
+    applyCanvasSize(canvas, system.config);
     const renderer = new CanvasRenderer(canvas, system);
-
-    const resize = () => {
-      // Match internal drawing buffer to actual CSS-rendered canvas size.
-      const viewportWidth = Math.max(canvas.clientWidth || window.innerWidth, 1);
-      const viewportHeight = Math.max(canvas.clientHeight || canvas.getBoundingClientRect().height, 1);
-      canvas.width = Math.floor(viewportWidth);
-      canvas.height = Math.floor(viewportHeight);
-    };
-
-    resize();
-    window.addEventListener("resize", resize);
 
     let rafId = 0;
     const animate = () => {
@@ -86,11 +85,23 @@ function HeroBackground() {
 
     return () => {
       cancelAnimationFrame(rafId);
-      window.removeEventListener("resize", resize);
       renderer.destroy();
       system.destroy();
     };
   }, []);
 
   return <canvas ref={canvasRef} className={styles.heroCanvas} aria-hidden="true" />;
+}
+
+function applyCanvasSize(canvas, config = {}) {
+  const { width = 600, height = 600, cellSize } = config;
+
+  if (typeof cellSize === "number") {
+    canvas.width = Math.max(1, Math.floor(width * cellSize));
+    canvas.height = Math.max(1, Math.floor(height * cellSize));
+    return;
+  }
+
+  canvas.width = Math.max(1, Math.floor(width));
+  canvas.height = Math.max(1, Math.floor(height));
 }

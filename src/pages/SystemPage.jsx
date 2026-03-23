@@ -185,26 +185,11 @@ function HeroSimulation({ systemClass, config, onSystemReady }) {
     }
 
     const system = new systemClass(config);
+    applyCanvasSize(canvas, system.config);
     const renderer = new CanvasRenderer(canvas, system);
     let paused = false;
     let frame = 0;
     let generation = 0;
-
-    const resizeCanvas = () => {
-      const width = Math.max(1, Math.floor(canvas.clientWidth));
-      const height = Math.max(1, Math.floor(canvas.clientHeight));
-      canvas.width = width;
-      canvas.height = height;
-    };
-
-    resizeCanvas();
-    const canObserveResize = typeof ResizeObserver === "function";
-    const resizeObserver = canObserveResize ? new ResizeObserver(resizeCanvas) : null;
-    if (resizeObserver) {
-      resizeObserver.observe(canvas);
-    } else {
-      window.addEventListener("resize", resizeCanvas);
-    }
 
     if (typeof onSystemReady === "function") {
       onSystemReady(system, {
@@ -264,15 +249,23 @@ function HeroSimulation({ systemClass, config, onSystemReady }) {
 
     return () => {
       cancelAnimationFrame(rafId);
-      if (resizeObserver) {
-        resizeObserver.disconnect();
-      } else {
-        window.removeEventListener("resize", resizeCanvas);
-      }
       renderer.destroy();
       system.destroy();
     };
   }, [systemClass, config, onSystemReady]);
 
   return <canvas ref={canvasRef} className={styles.heroCanvas} aria-label="Live simulation" />;
+}
+
+function applyCanvasSize(canvas, config = {}) {
+  const { width = 600, height = 600, cellSize } = config;
+
+  if (typeof cellSize === "number") {
+    canvas.width = Math.max(1, Math.floor(width * cellSize));
+    canvas.height = Math.max(1, Math.floor(height * cellSize));
+    return;
+  }
+
+  canvas.width = Math.max(1, Math.floor(width));
+  canvas.height = Math.max(1, Math.floor(height));
 }

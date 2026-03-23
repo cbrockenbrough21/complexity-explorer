@@ -6,7 +6,12 @@ Read this file at the start of every session before doing anything else.
 
 ## What this project is
 
-An interactive browser-based explorer for four systems from complexity theory. All four demonstrate emergence — global patterns arising from simple local rules. The project prioritizes visual beauty and accessibility to non-technical audiences, alongside technical depth for engineers.
+A website exploring complex systems through simulations, interactive learning modules, and articles. All four simulations demonstrate emergence — global patterns arising from simple local rules. The project prioritizes visual beauty and accessibility to non-technical audiences, alongside technical depth for engineers.
+
+The site has three layers:
+- **Simulations** — watch and interact with systems directly (Explorer, System pages)
+- **Learning modules** — guided, interactive lessons that teach the underlying concepts
+- **Articles** — long-form essays connecting complex systems ideas to the real world
 
 ---
 
@@ -34,6 +39,16 @@ Phase 4 introduces `WebGLReactionDiffusion.js` — a GPU-accelerated version of 
 - Never import simulation internals directly
 - Pass system class as a prop, not an instance
 - All config changes go through `init()` — never mutate system state directly
+
+---
+
+## Known bugs — do not reintroduce
+
+### Canvas aspect ratio
+Cells and simulation visuals must always render as squares, never as stretched rectangles. This is most visible in Game of Life when the canvas is not square, but applies to all systems. The canvas element must never distort cell proportions. When sizing a canvas:
+- For grid-based systems (Game of Life): canvas pixel size = grid width × cellSize by grid height × cellSize
+- For continuous systems (Boids, Reaction-Diffusion): canvas pixel size = config.width × config.height exactly
+- Never stretch the canvas element to fill a container if that would change the aspect ratio — use CSS object-fit or center it instead
 
 ---
 
@@ -93,27 +108,38 @@ src/
     CanvasRenderer.js
     PrintRenderer.js           # Phase 2
   components/
+    Nav.jsx                       # Phase 3
     SimulationView.jsx
     Controls.jsx
     TheoryPanel.jsx
-    CaptureButton.jsx          # Phase 2
+    CaptureButton.jsx
+    modules/
+      ModulePlayer.jsx            # Phase 5
+      GameOfLifePredictor.jsx     # Phase 5
+      MiniGameOfLife.jsx          # Phase 5
+      MiniBoids.jsx               # Phase 5
   pages/
-    Home.jsx                   # Phase 3
-    Explore.jsx                # Phase 3
-    SystemPage.jsx             # Phase 3
-    About.jsx                  # Phase 3
-    Ambient.jsx                # Phase 4
+    Home.jsx                      # Phase 3
+    Explore.jsx                   # Phase 3
+    SystemPage.jsx                # Phase 3
+    About.jsx                     # Phase 3
+    Articles.jsx                  # Phase 4
+    ArticlePage.jsx               # Phase 4
+    Learn.jsx                     # Phase 5
+    ModulePage.jsx                # Phase 5
   data/
-    systemContent.js           # theory panel content
-    printPresets.js            # Phase 2
+    systemContent.js
+    printPresets.js
+    articles.js                   # Phase 4
+    modules.js                    # Phase 5
+  content/
+    articles/                     # Phase 4 — one .js file per article
   utils/
-    exportCanvas.js            # Phase 2
+    exportCanvas.js
 tests/
   GameOfLife.test.js
   Boids.test.js
-  exportCanvas.test.js         # Phase 2
-pi/
-  autostart.sh                 # Phase 4
+  exportCanvas.test.js
 ```
 
 ---
@@ -129,12 +155,15 @@ pi/
 
 ## Phase completion
 
-The README.md tracks phase completion with checkboxes. At the end of each phase, update README.md to mark it complete:
+The README.md tracks phase completion with checkboxes. At the end of each phase, update README.md to mark it complete.
 
-- Phase 1 complete: change `[ ]` to `[x]` next to Phase 1
-- Same for Phases 2, 3, 4
-
-Agent sessions check the README at the start to confirm prior phases are done before proceeding.
+Current phases:
+- Phase 1 — Interactive explorer [x]
+- Phase 2 — Downloadable high-res prints [x]
+- Phase 3 — Website (routing, pages, about, deploy) [ ]
+- Phase 4 — Articles scaffold [ ]
+- Phase 5 — Learning modules [ ]
+- Phase 6 — WebGL upgrade [ ]
 
 ---
 
@@ -146,3 +175,4 @@ Agent sessions check the README at the start to confirm prior phases are done be
 - CSS modules for component styles
 - No external UI libraries — build everything from scratch
 - Keep simulation code framework-agnostic (no React imports in systems/)
+- Learning module interactive components may import simulation system classes directly — they are not general UI components

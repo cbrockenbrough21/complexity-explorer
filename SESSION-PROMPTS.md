@@ -160,49 +160,59 @@ Task: Phase 3, Session 2.
 ```
 
 ---
-
-### Session 7 — About page + final polish
-
+### Session 7 — About page + polish + deploy
 ```
 Read AGENTS.md carefully before doing anything.
-Read the README to confirm Phase 3 Session 2 is complete.
+Read the README to confirm Phase 3 Sessions 5 and 6 are complete.
 
 Task: Phase 3, Session 3.
 
-1. Create src/pages/About.jsx — your story. Why complexity theory, why this project, what you find beautiful about it. Written in first person. Space for a photo if you want one later.
+1. Create src/pages/About.jsx using the following exact text as the page
+   content. Do not rewrite, summarize, or editorialize — use this text
+   as written:
 
-2. Polish the full site — consistent spacing, typography, color palette across all pages.
+   ---
 
-3. Set up deployment — configure for GitHub Pages or Vercel. Add deploy instructions to README.
+   Catherine Brockenbrough
 
-4. Run all tests. All must pass.
+   I'm interested in systems where the behavior that emerges is something
+   no individual part intended or designed.
 
-5. Update README — mark Phase 3 as complete: change [ ] to [x] next to Phase 3.
-```
+   A flock of starlings. A language evolving over centuries. A pattern
+   forming on the skin of a zebrafish. The way a single cell becomes a
+   brain. These things weren't designed from the top down — they came out
+   of local interactions, feedback, and some randomness along the way.
 
----
+   These kinds of systems show up everywhere: biology, markets, how ideas
+   spread, what it means to have agency inside something much larger than
+   yourself. This project is an attempt to make some of those dynamics
+   visible and tangible — through simulations, interactive modules, and
+   writing.
 
-## Phase 4 — Raspberry Pi ambient display
+   ---
 
----
+   Leave a clearly marked placeholder for a photo: a styled empty block
+   with the text "[ photo ]" centered inside it, positioned after the
+   name and before the first paragraph.
 
-### Session 8 — Ambient mode + WebGL reaction-diffusion
+2. Polish the full site:
+   - Consistent spacing, typography, and color palette across all pages
+   - All nav links work correctly
+   - Mobile responsive: stacks sensibly on small screens
+   - No broken routes
+   - KNOWN BUG: audit all canvases for aspect ratio distortion. Cells
+     must always render as squares, never stretched rectangles. This is
+     most visible in Game of Life when the viewport is not square.
+     See AGENTS.md for the full rule.
 
-```
-Read AGENTS.md carefully before doing anything.
-Read the README to confirm Phase 3 is complete.
+3. Set up deployment for Vercel. Add a DEPLOYMENT.md with clear
+   instructions:
+   - How to deploy for the first time
+   - How to redeploy after changes
+   - Any environment variables needed (there are none currently)
 
-Task: Phase 4.
-
-1. Create src/pages/Ambient.jsx — fullscreen route at /ambient with zero UI chrome. No nav, no controls, no theory panel. Auto-cycles through all four systems every 3 minutes with a slow fade transition between them. Each system runs with its most visually beautiful default parameters.
-
-2. Implement src/systems/WebGLReactionDiffusion.js — Gray-Scott model running in a WebGL fragment shader. Must implement the same ISimulation interface as the canvas version: init(), step(), getState(), destroy(). Grid size 512×512. The React components must not need any changes — this is the payoff of the strategy pattern.
-
-3. Swap WebGLReactionDiffusion in for ReactionDiffusion in the Ambient page only. Keep canvas version for the explorer (better for the controls interaction).
-
-4. Create pi/autostart.sh — a shell script that launches Chromium in fullscreen kiosk mode pointing at /ambient on boot. Add setup instructions to README under a "Raspberry Pi setup" section.
+4. Update README — mark Phase 3 as complete: change [ ] to [x] next
+   to Phase 3.
 
 5. Run all tests. All must pass.
-
-6. Update README — mark Phase 4 as complete: change [ ] to [x] next to Phase 4. Add a note about what comes next.
 ```
