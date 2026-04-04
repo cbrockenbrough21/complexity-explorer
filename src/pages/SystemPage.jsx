@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
-import CaptureButton from "../components/CaptureButton.jsx";
 import TheoryPanel from "../components/TheoryPanel.jsx";
 import { CanvasRenderer } from "../renderer/CanvasRenderer.js";
 import { systemContent } from "../data/systemContent.js";
@@ -43,7 +42,6 @@ const HERO_CONFIG_OVERRIDES = {
 
 export default function SystemPage() {
   const { id } = useParams();
-  const [simulationApi, setSimulationApi] = useState(null);
   const content = id ? systemContent[id] ?? null : null;
   const systemDef = id ? SYSTEMS[id] ?? null : null;
 
@@ -66,7 +64,7 @@ export default function SystemPage() {
   }, [id, systemDef]);
 
   useEffect(() => {
-    setSimulationApi(null);
+    window.scrollTo({ top: 0, behavior: "instant" });
   }, [id]);
 
   useEffect(() => {
@@ -124,7 +122,6 @@ export default function SystemPage() {
         <HeroSimulation
           systemClass={systemDef.classRef}
           config={heroConfig}
-          onSystemReady={(_, api) => setSimulationApi(api)}
         />
         <div className={styles.heroScrim} aria-hidden="true" />
 
@@ -140,18 +137,6 @@ export default function SystemPage() {
             ))}
           </div>
         </header>
-      </section>
-
-      <section
-        className={`${styles.sectionCard} ${styles.revealBase}`}
-        data-system-reveal="true"
-      >
-        <h2 className={styles.sectionTitle}>Capture this moment</h2>
-        <p className={styles.sectionBody}>
-          Export the current state as a high-resolution print. The live simulation is paused
-          during capture and resumes immediately after.
-        </p>
-        <CaptureButton simulationApi={simulationApi} systemName={systemDef.label} />
       </section>
 
       <section
@@ -175,7 +160,7 @@ export default function SystemPage() {
   );
 }
 
-function HeroSimulation({ systemClass, config, onSystemReady }) {
+function HeroSimulation({ systemClass, config }) {
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -187,61 +172,27 @@ function HeroSimulation({ systemClass, config, onSystemReady }) {
     const system = new systemClass(config);
     applyCanvasSize(canvas, system.config);
     const renderer = new CanvasRenderer(canvas, system);
-    let paused = false;
-    let frame = 0;
-    let generation = 0;
-
-    if (typeof onSystemReady === "function") {
-      onSystemReady(system, {
-        pause: () => {
-          paused = true;
-        },
-        resume: () => {
-          paused = false;
-        },
-        getSystem: () => system,
-        getGeneration: () => generation,
-        getFrame: () => frame,
-        applyConfig: (nextConfig) => {
-          system.init(nextConfig);
-          frame = 0;
-          generation = 0;
-        }
-      });
-    }
-
     let rafId = 0;
     let lastTime = performance.now();
     let accumulator = 0;
 
     const animate = (timestamp) => {
-      if (paused) {
-        lastTime = timestamp;
-        rafId = requestAnimationFrame(animate);
-        return;
-      }
-
       const delta = timestamp - lastTime;
       lastTime = timestamp;
-      let stepsAdvanced = 0;
 
       const stepsPerSecond = system.config?.stepsPerSecond ?? 60;
       if (stepsPerSecond >= 60) {
         system.step();
-        stepsAdvanced = 1;
       } else {
         accumulator += delta;
         const stepMs = 1000 / Math.max(stepsPerSecond, 1);
         while (accumulator >= stepMs) {
           system.step();
           accumulator -= stepMs;
-          stepsAdvanced += 1;
         }
       }
 
       renderer.render();
-      frame += 1;
-      generation += stepsAdvanced;
       rafId = requestAnimationFrame(animate);
     };
 
@@ -252,7 +203,7 @@ function HeroSimulation({ systemClass, config, onSystemReady }) {
       renderer.destroy();
       system.destroy();
     };
-  }, [systemClass, config, onSystemReady]);
+  }, [systemClass, config]);
 
   return <canvas ref={canvasRef} className={styles.heroCanvas} aria-label="Live simulation" />;
 }

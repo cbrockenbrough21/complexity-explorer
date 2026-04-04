@@ -16,7 +16,8 @@
 
 .hero {
   position: relative;
-  min-height: 62vh;
+  min-height: 44vh;
+  max-height: 52vh;
   width: 100%;
   overflow: hidden;
   border-bottom: 1px solid rgba(98, 78, 51, 0.35);
@@ -184,7 +185,8 @@
 
 @media (max-width: 720px) {
   .hero {
-    min-height: 52vh;
+    min-height: 38vh;
+    max-height: 44vh;
   }
 
   .heroContent {
