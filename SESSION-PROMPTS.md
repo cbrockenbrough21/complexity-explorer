@@ -345,18 +345,16 @@ Task: Phase 5, Session 2.
    MODULES_BY_ID. Renders ModulePlayer for that module. Handles
    unknown IDs with a clear fallback.
 
-4. Create src/components/modules/ModulePlayer.jsx — the step-by-step
-   player. Renders one step at a time. Navigation: previous / next buttons.
-   Handles three step types:
-
-   READ: renders each string in step.content as its own paragraph.
-
-   INTERACT: renders a labeled placeholder div:
-     <div className={styles.interactPlaceholder}>
-       <span>{step.component}</span>
-       <span>Interactive component — coming in Session 3</span>
-     </div>
-     Render step.prompt as a caption below the placeholder.
+4. Create src/components/modules/ModulePlayer.jsx — a scrolling layout
+that renders all steps in sequence as a single page. No next/back
+navigation. Each step type has a distinct visual treatment with generous
+vertical spacing between steps so the transitions feel deliberate.
+READ steps render as flowing paragraphs.
+INTERACT steps render the placeholder div with the prompt as a caption
+below it. The interact block should be visually distinct from the
+reading — enough whitespace above and below that it reads as a pause.
+REFLECT steps render the question with extra top margin and no
+additional UI. It should feel like the page ending, not a form.
 
    REFLECT: renders step.question as a single paragraph. No additional UI.
 

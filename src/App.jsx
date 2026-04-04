@@ -6,6 +6,8 @@ import SystemPage from "./pages/SystemPage.jsx";
 import About from "./pages/About.jsx";
 import Articles from "./pages/Articles.jsx";
 import ArticlePage from "./pages/ArticlePage.jsx";
+import Learn from "./pages/Learn.jsx";
+import ModulePage from "./pages/ModulePage.jsx";
 import styles from "./App.module.css";
 
 export default function App() {
@@ -19,6 +21,8 @@ export default function App() {
           <Route path="about" element={<About />} />
           <Route path="articles" element={<Articles />} />
           <Route path="articles/:articleId" element={<ArticlePage />} />
+          <Route path="learn" element={<Learn />} />
+          <Route path="learn/:moduleId" element={<ModulePage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
