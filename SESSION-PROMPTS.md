@@ -216,3 +216,253 @@ Task: Phase 3, Session 3.
 
 5. Run all tests. All must pass.
 ```
+
+---
+
+## Phase 4 — Articles scaffold
+
+---
+
+### Session 8 — Articles infrastructure
+
+```
+Read AGENTS.md carefully before doing anything.
+Read the README to confirm Phase 3 is complete before starting.
+
+Task: Phase 4, Session 1.
+
+1. Create src/data/articles.js — a static index of articles. Each entry has:
+   - id: string (kebab-case, matches filename in src/content/articles/)
+   - title: string
+   - description: string (1-2 sentences, shown in article listing)
+   - date: string (ISO format: "2025-01-01")
+   - concepts: string[] (concept tags)
+   - published: boolean (false = draft, not shown in listing)
+
+   Seed it with one placeholder article:
+   {
+     id: "emergence-everywhere",
+     title: "Emergence everywhere",
+     description: "A placeholder article.",
+     date: "2025-01-01",
+     concepts: ["emergence"],
+     published: false,
+   }
+
+2. Create src/content/articles/emergence-everywhere.js — exports a single
+   object with an id field matching the filename and a content field.
+   Content is an array of paragraph strings. Use placeholder text.
+   This establishes the pattern for all future articles.
+
+   export const emergenceEverywhere = {
+     id: "emergence-everywhere",
+     content: [
+       "Placeholder paragraph one.",
+       "Placeholder paragraph two.",
+     ],
+   };
+
+3. Add routes to the React Router config:
+   /articles             → src/pages/Articles.jsx
+   /articles/:articleId  → src/pages/ArticlePage.jsx
+
+4. Create src/pages/Articles.jsx — lists all published articles from
+   articles.js (where published === true). If no published articles exist,
+   show a clean empty state: "No articles yet." Do not show drafts.
+
+5. Create src/pages/ArticlePage.jsx — loads an article by ID. Imports
+   the matching content file dynamically or via a lookup map. Renders
+   the title, date, concept tags, and content paragraphs. Handles unknown
+   IDs with a clear 404-style fallback.
+
+6. Add /articles to the Nav component.
+
+7. Update README — mark Phase 4 as complete: change [ ] to [x] next
+   to Phase 4.
+
+8. Run all tests. All must pass.
+```
+
+---
+
+## Phase 5 — Learning modules
+
+---
+
+### Session 9 — Module data index
+
+```
+Read AGENTS.md carefully before doing anything.
+Read the README to confirm Phase 4 is complete before starting.
+
+Task: Phase 5, Session 1.
+
+1. Verify that the following files exist in src/content/modules/:
+   module-01.js through module-09.js
+   If any are missing, stop and report which ones.
+
+2. Create src/data/modules.js — imports all 9 module exports and
+   re-exports them as an ordered array and a keyed object:
+
+   import { module01 } from "../content/modules/module-01.js";
+   import { module02 } from "../content/modules/module-02.js";
+   ... (all 9)
+
+   export const MODULES = [
+     module01, module02, module03,
+     module04, module05, module06,
+     module07, module08, module09,
+   ];
+
+   export const MODULES_BY_ID = Object.fromEntries(
+     MODULES.map(m => [m.id, m])
+   );
+
+3. Do not create any page or routing components yet. Content index only.
+
+4. Run all tests. All must pass.
+```
+
+---
+
+### Session 10 — ModulePlayer + Learn page + routing
+
+```
+Read AGENTS.md carefully before doing anything.
+Read the README to confirm Phase 5 Session 1 is complete.
+
+Task: Phase 5, Session 2.
+
+1. Add routes to the React Router config:
+   /learn                → src/pages/Learn.jsx
+   /learn/:moduleId      → src/pages/ModulePage.jsx
+
+2. Create src/pages/Learn.jsx — lists all 9 modules as cards.
+   Each card shows: module number, title, description, concept tags.
+   Links to /learn/:moduleId.
+
+3. Create src/pages/ModulePage.jsx — loads a module by ID from
+   MODULES_BY_ID. Renders ModulePlayer for that module. Handles
+   unknown IDs with a clear fallback.
+
+4. Create src/components/modules/ModulePlayer.jsx — the step-by-step
+   player. Renders one step at a time. Navigation: previous / next buttons.
+   Handles three step types:
+
+   READ: renders each string in step.content as its own paragraph.
+
+   INTERACT: renders a labeled placeholder div:
+     <div className={styles.interactPlaceholder}>
+       <span>{step.component}</span>
+       <span>Interactive component — coming in Session 3</span>
+     </div>
+     Render step.prompt as a caption below the placeholder.
+
+   REFLECT: renders step.question as a single paragraph. No additional UI.
+
+5. Add /learn to the Nav component.
+
+6. Run all tests. All must pass.
+```
+
+---
+
+### Session 11 — Interactive components
+
+```
+Read AGENTS.md carefully before doing anything.
+Read the README to confirm Phase 5 Session 2 is complete.
+
+Task: Phase 5, Session 3.
+
+Build the interactive components referenced in the module content files.
+Each lives in src/components/modules/. Each accepts a config prop matching
+the config object in its content file.
+
+Components that use existing simulation system classes:
+
+MiniGameOfLife
+  Uses GameOfLife system class directly (pass as prop, never import internals).
+  Config: width, height, cellSize, initialDensity, stepsPerSecond, showControls.
+  showControls array determines which controls render:
+    play, pause, step, reset, density.
+
+MiniBoids
+  Uses Boids system class directly.
+  Config: agentCount, width, height, showControls.
+  showControls: separationWeight, alignmentWeight, cohesionWeight, reset.
+
+MiniReactionDiffusion
+  Uses ReactionDiffusion system class directly.
+  Config: width, height, stepsPerFrame, presets, showControls.
+  showControls: preset (dropdown of preset names), reset, feed (slider), kill (slider).
+
+Self-contained components (plain React + Canvas 2D, no ISimulation):
+
+FeedbackLoopViz
+  Simulates a value evolving under positive or negative feedback.
+  Renders a live time-series line on a canvas.
+  Config: initialValue, minValue, maxValue, showControls.
+  showControls: feedbackType (positive/negative toggle), feedbackStrength (slider 0–1), reset.
+
+LogisticMapViz
+  Renders the logistic map: x(n+1) = r * x(n) * (1 - x(n)).
+  Shows time series on a canvas. When twoTrajectories is enabled, plots
+  two starting values separated by 0.001 on the same axes in different colors.
+  Config: initialR, minR, maxR, showControls.
+  showControls: rSlider, twoTrajectories (checkbox), reset.
+
+DesirePathViz
+  Grid-based. Agents move left to right, deposit pheromone, follow stronger trails.
+  Config: gridWidth, gridHeight, agentCount, showControls.
+  showControls: addAgents (button), clearPaths (button), reset, showPheromones (toggle).
+
+NetworkViz
+  Node-edge graph. Supports three topologies: random, smallWorld, scaleFree.
+  Cascade mode: selecting a node highlights which nodes disconnect if it is removed.
+  Config: nodeCount, initialTopology, showControls.
+  showControls: topology (dropdown), addHub, removeHub, cascade, reset.
+
+SchellingViz
+  Grid of agents in two groups. Each step: agents below the tolerance threshold move
+  to a random empty cell.
+  Config: gridSize, groupARatio, groupBRatio, showControls.
+  showControls: toleranceThreshold (slider 0–1), reset, step (single generation), run.
+
+EvolutionViz
+  Population of dots on a 2D fitness landscape (rendered as a heatmap).
+  Each generation: low-fitness agents replaced by mutated copies of high-fitness agents.
+  changeEnvironment rerandomizes the fitness landscape.
+  Config: populationSize, showControls.
+  showControls: mutationRate (slider), selectionStrength (slider),
+    changeEnvironment (button), reset.
+
+Rules for all components:
+  - No external libraries. Canvas 2D or plain DOM only.
+  - All canvases follow the aspect ratio rules in AGENTS.md.
+  - Components that use existing systems: pass system class as prop,
+    never import simulation internals directly into the component.
+  - Self-contained components manage their own state with React hooks.
+
+Replace the placeholder divs in ModulePlayer with a component lookup:
+
+  const INTERACT_COMPONENTS = {
+    MiniGameOfLife,
+    MiniBoids,
+    MiniReactionDiffusion,
+    FeedbackLoopViz,
+    LogisticMapViz,
+    DesirePathViz,
+    NetworkViz,
+    SchellingViz,
+    EvolutionViz,
+  };
+
+  const InteractComponent = INTERACT_COMPONENTS[step.component];
+  if (!InteractComponent) return <div>Unknown component: {step.component}</div>;
+  return <InteractComponent config={step.config} />;
+
+Update README — mark Phase 5 as complete: change [ ] to [x] next to Phase 5.
+
+Run all tests. All must pass.
+```

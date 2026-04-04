@@ -1,0 +1,59 @@
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+}
+
+.empty {
+  color: var(--color-muted, #888);
+  font-size: 1rem;
+}
+
+.list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.item {
+  border-bottom: 1px solid var(--color-border, #e5e5e5);
+  padding-bottom: 1.5rem;
+}
+
+.link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.link:hover .articleTitle {
+  text-decoration: underline;
+}
+
+.articleTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0 0 0.4rem;
+}
+
+.description {
+  font-size: 0.95rem;
+  color: var(--color-muted, #555);
+  margin: 0 0 0.5rem;
+}
+
+.meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.8rem;
+  color: var(--color-muted, #888);
+}

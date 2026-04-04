@@ -4,6 +4,8 @@ import Home from "./pages/Home.jsx";
 import Explore from "./pages/Explore.jsx";
 import SystemPage from "./pages/SystemPage.jsx";
 import About from "./pages/About.jsx";
+import Articles from "./pages/Articles.jsx";
+import ArticlePage from "./pages/ArticlePage.jsx";
 import styles from "./App.module.css";
 
 export default function App() {
@@ -15,6 +17,8 @@ export default function App() {
           <Route path="explore" element={<Explore />} />
           <Route path="systems/:id" element={<SystemPage />} />
           <Route path="about" element={<About />} />
+          <Route path="articles" element={<Articles />} />
+          <Route path="articles/:articleId" element={<ArticlePage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

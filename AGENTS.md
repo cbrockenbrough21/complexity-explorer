@@ -160,8 +160,8 @@ The README.md tracks phase completion with checkboxes. At the end of each phase,
 Current phases:
 - Phase 1 — Interactive explorer [x]
 - Phase 2 — Downloadable high-res prints [x]
-- Phase 3 — Website (routing, pages, about, deploy) [ ]
-- Phase 4 — Articles scaffold [ ]
+- Phase 3 — Website (routing, pages, about, deploy) [x]
+- Phase 4 — Articles scaffold [x]
 - Phase 5 — Learning modules [ ]
 - Phase 6 — WebGL upgrade [ ]
 

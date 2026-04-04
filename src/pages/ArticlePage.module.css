@@ -1,0 +1,42 @@
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+
+.back {
+  display: inline-block;
+  font-size: 0.9rem;
+  color: var(--color-muted, #888);
+  text-decoration: none;
+  margin-bottom: 2rem;
+}
+
+.back:hover {
+  text-decoration: underline;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.meta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.85rem;
+  color: var(--color-muted, #888);
+  margin-bottom: 2rem;
+}
+
+.body p {
+  font-size: 1rem;
+  line-height: 1.7;
+  margin-bottom: 1.25rem;
+}
+
+.notFound {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
