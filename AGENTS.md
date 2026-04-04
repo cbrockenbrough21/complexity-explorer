@@ -44,6 +44,10 @@ Phase 4 introduces `WebGLReactionDiffusion.js` — a GPU-accelerated version of 
 
 ## Known bugs — do not reintroduce
 
+### Page scroll position not resetting on route change
+When navigating between routes, the browser retains the scroll position from the previous page. Users land mid-page instead of at the top.
+- **Fix:** Added `ScrollToTop` component (`src/components/ScrollToTop.jsx`) rendered inside `BrowserRouter` (above `<Routes>`) in `App.jsx`. It listens to `pathname` and calls `window.scrollTo(0, 0)` on each navigation.
+
 ### Canvas aspect ratio
 Cells and simulation visuals must always render as squares, never as stretched rectangles. This is most visible in Game of Life when the canvas is not square, but applies to all systems. The canvas element must never distort cell proportions. When sizing a canvas:
 - For grid-based systems (Game of Life): canvas pixel size = grid width × cellSize by grid height × cellSize

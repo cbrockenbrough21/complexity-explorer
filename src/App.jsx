@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import NavBar from "./components/NavBar.jsx";
+import ScrollToTop from "./components/ScrollToTop.jsx";
 import Home from "./pages/Home.jsx";
 import Explore from "./pages/Explore.jsx";
 import SystemPage from "./pages/SystemPage.jsx";
@@ -13,6 +14,7 @@ import styles from "./App.module.css";
 export default function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <Routes>
         <Route element={<SiteLayout />}>
           <Route index element={<Home />} />
