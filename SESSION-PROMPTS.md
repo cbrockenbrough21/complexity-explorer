@@ -364,85 +364,300 @@ additional UI. It should feel like the page ending, not a form.
 ```
 
 ---
-
-### Session 11 — Interactive components
+### Session 11a — Interactive components (simulation-based)
 
 ```
 Read AGENTS.md carefully before doing anything.
 Read the README to confirm Phase 5 Session 2 is complete.
 
-Task: Phase 5, Session 3.
+Task: Phase 5, Session 3a.
 
-Build the interactive components referenced in the module content files.
-Each lives in src/components/modules/. Each accepts a config prop matching
-the config object in its content file.
+Build the three interactive components that wrap existing simulation
+system classes. Each lives in src/components/modules/.
 
-Components that use existing simulation system classes:
+Rules for all three:
+- Pass the system class as a prop. Never import simulation internals
+  directly into the component.
+- All config changes go through init(). Never mutate system state directly.
+- All canvases follow the aspect ratio rules in AGENTS.md.
+- No external libraries.
+
+---
 
 MiniGameOfLife
-  Uses GameOfLife system class directly (pass as prop, never import internals).
-  Config: width, height, cellSize, initialDensity, stepsPerSecond, showControls.
-  showControls array determines which controls render:
-    play, pause, step, reset, density.
+File: src/components/modules/MiniGameOfLife.jsx
+
+Wraps the existing GameOfLife system class.
+Accepts a config prop:
+  {
+    width: number,        // grid width in cells
+    height: number,       // grid height in cells
+    cellSize: number,     // pixels per cell
+    initialDensity: number,
+    stepsPerSecond: number,
+    showControls: string[],
+  }
+
+showControls determines which controls render. Possible values:
+  "play"    — button, starts the simulation
+  "pause"   — button, pauses the simulation
+  "step"    — button, advances one generation while paused
+  "reset"   — button, calls init() with current config
+  "density" — slider 0.1–0.9, calls init() with updated initialDensity
+
+Canvas size = width * cellSize by height * cellSize exactly.
+
+---
 
 MiniBoids
-  Uses Boids system class directly.
-  Config: agentCount, width, height, showControls.
-  showControls: separationWeight, alignmentWeight, cohesionWeight, reset.
+File: src/components/modules/MiniBoids.jsx
+
+Wraps the existing Boids system class.
+Accepts a config prop:
+  {
+    agentCount: number,
+    width: number,
+    height: number,
+    showControls: string[],
+  }
+
+showControls possible values:
+  "separationWeight" — slider 0–3, calls init() with updated weight
+  "alignmentWeight"  — slider 0–3, calls init() with updated weight
+  "cohesionWeight"   — slider 0–3, calls init() with updated weight
+  "reset"            — button, calls init() with current config
+
+Canvas size = width by height exactly.
+Simulation runs continuously. No play/pause needed.
+
+---
 
 MiniReactionDiffusion
-  Uses ReactionDiffusion system class directly.
-  Config: width, height, stepsPerFrame, presets, showControls.
-  showControls: preset (dropdown of preset names), reset, feed (slider), kill (slider).
+File: src/components/modules/MiniReactionDiffusion.jsx
 
-Self-contained components (plain React + Canvas 2D, no ISimulation):
+Wraps the existing ReactionDiffusion system class.
+Accepts a config prop:
+  {
+    width: number,
+    height: number,
+    stepsPerFrame: number,
+    presets: string[],
+    showControls: string[],
+  }
+
+Presets map to these Gray-Scott parameter pairs:
+  "spots"     — feed: 0.035, kill: 0.065
+  "stripes"   — feed: 0.060, kill: 0.062
+  "labyrinth" — feed: 0.055, kill: 0.062
+
+showControls possible values:
+  "preset" — dropdown of preset names, calls init() with preset parameters
+  "reset"  — button, calls init() with current config
+  "feed"   — slider 0.01–0.09, calls init() with updated feed rate
+  "kill"   — slider 0.04–0.07, calls init() with updated kill rate
+
+Canvas size = width by height exactly.
+
+---
+
+After building all three:
+
+Replace the placeholder divs in ModulePlayer for these three components.
+The lookup already exists from Session 2:
+
+  const INTERACT_COMPONENTS = {
+    MiniGameOfLife,
+    MiniBoids,
+    MiniReactionDiffusion,
+    // others coming in Session 3b
+  };
+
+Leave placeholders for the Session 3b components.
+
+Run all tests. All must pass.
+```
+
+---
+
+### Session 11b — Interactive components (self-contained)
+
+```
+Read AGENTS.md carefully before doing anything.
+Read the README to confirm Phase 5 Session 3a is complete.
+
+Task: Phase 5, Session 3b.
+
+Build the six self-contained interactive components. Each lives in
+src/components/modules/. Each manages its own state with React hooks.
+No ISimulation interface. Canvas 2D or plain DOM only. No external libraries.
+All canvases follow the aspect ratio rules in AGENTS.md.
+
+---
 
 FeedbackLoopViz
-  Simulates a value evolving under positive or negative feedback.
-  Renders a live time-series line on a canvas.
-  Config: initialValue, minValue, maxValue, showControls.
-  showControls: feedbackType (positive/negative toggle), feedbackStrength (slider 0–1), reset.
+File: src/components/modules/FeedbackLoopViz.jsx
+
+Simulates a value evolving over time under positive or negative feedback.
+Renders a live time-series line on a canvas. The line updates continuously.
+
+Positive feedback: value moves away from center, grows or shrinks toward
+the boundary. Negative feedback: value is pulled back toward the midpoint.
+
+Accepts a config prop:
+  {
+    initialValue: number,   // starting value, e.g. 50
+    minValue: number,       // e.g. 0
+    maxValue: number,       // e.g. 100
+    showControls: string[],
+  }
+
+showControls possible values:
+  "feedbackType"     — toggle button: "positive" / "negative"
+  "feedbackStrength" — slider 0.0–1.0
+  "reset"            — resets value to initialValue, clears the line
+
+---
 
 LogisticMapViz
-  Renders the logistic map: x(n+1) = r * x(n) * (1 - x(n)).
-  Shows time series on a canvas. When twoTrajectories is enabled, plots
-  two starting values separated by 0.001 on the same axes in different colors.
-  Config: initialR, minR, maxR, showControls.
-  showControls: rSlider, twoTrajectories (checkbox), reset.
+File: src/components/modules/LogisticMapViz.jsx
+
+Renders the logistic map: x(n+1) = r * x(n) * (1 - x(n)).
+Displays a time series on a canvas, updated each frame.
+Starting value is always 0.5 unless twoTrajectories is enabled.
+
+When twoTrajectories is enabled: plot two trajectories starting at
+0.500 and 0.501 in two different colors on the same axes.
+
+Accepts a config prop:
+  {
+    initialR: number,   // e.g. 2.5
+    minR: number,       // e.g. 1.0
+    maxR: number,       // e.g. 4.0
+    showControls: string[],
+  }
+
+showControls possible values:
+  "rSlider"          — slider from minR to maxR, step 0.01
+  "twoTrajectories"  — checkbox, enables the two-trajectory mode
+  "reset"            — clears the plot, restarts from x=0.5
+
+---
 
 DesirePathViz
-  Grid-based. Agents move left to right, deposit pheromone, follow stronger trails.
-  Config: gridWidth, gridHeight, agentCount, showControls.
-  showControls: addAgents (button), clearPaths (button), reset, showPheromones (toggle).
+File: src/components/modules/DesirePathViz.jsx
+
+Grid-based. Agents spawn on the left edge and move toward the right edge.
+Each agent deposits pheromone on the cells it visits. Subsequent agents
+are attracted to stronger pheromone trails, with some randomness.
+Pheromone fades slowly over time.
+
+Accepts a config prop:
+  {
+    gridWidth: number,
+    gridHeight: number,
+    agentCount: number,
+    showControls: string[],
+  }
+
+showControls possible values:
+  "addAgents"      — button, adds 10 more agents
+  "clearPaths"     — button, resets all pheromone to zero
+  "reset"          — resets agents and pheromone, restarts
+  "showPheromones" — toggle, shows pheromone intensity as a heatmap overlay
+
+---
 
 NetworkViz
-  Node-edge graph. Supports three topologies: random, smallWorld, scaleFree.
-  Cascade mode: selecting a node highlights which nodes disconnect if it is removed.
-  Config: nodeCount, initialTopology, showControls.
-  showControls: topology (dropdown), addHub, removeHub, cascade, reset.
+File: src/components/modules/NetworkViz.jsx
+
+Displays a node-edge graph rendered on a canvas.
+Nodes are positioned using a simple force-directed layout or fixed
+positions — either is acceptable as long as the graph is readable.
+
+Supports three topologies:
+  "random"     — edges assigned randomly, uniform degree distribution
+  "smallWorld" — high clustering and short path lengths (Watts-Strogatz)
+  "scaleFree"  — few hubs with many connections, most nodes with few
+                 (preferential attachment)
+
+Cascade mode: when a node is clicked, highlight in a distinct color
+which other nodes would become unreachable if that node were removed.
+
+Accepts a config prop:
+  {
+    nodeCount: number,
+    initialTopology: string,
+    showControls: string[],
+  }
+
+showControls possible values:
+  "topology"   — dropdown: random / smallWorld / scaleFree, regenerates graph
+  "addHub"     — button, adds one high-degree node connected to 5 existing nodes
+  "removeHub"  — button, removes the highest-degree node
+  "cascade"    — toggle, enables click-to-cascade mode
+  "reset"      — regenerates graph with current topology
+
+---
 
 SchellingViz
-  Grid of agents in two groups. Each step: agents below the tolerance threshold move
-  to a random empty cell.
-  Config: gridSize, groupARatio, groupBRatio, showControls.
-  showControls: toleranceThreshold (slider 0–1), reset, step (single generation), run.
+File: src/components/modules/SchellingViz.jsx
+
+Grid of agents in two groups (A and B) plus empty cells.
+Each step: any agent whose fraction of same-type neighbors is below
+the tolerance threshold moves to a random empty cell.
+
+Accepts a config prop:
+  {
+    gridSize: number,       // e.g. 30 — renders as gridSize x gridSize
+    groupARatio: number,    // e.g. 0.45
+    groupBRatio: number,    // e.g. 0.45 — remainder are empty cells
+    showControls: string[],
+  }
+
+showControls possible values:
+  "toleranceThreshold" — slider 0.0–1.0, step 0.05
+  "reset"              — reinitializes grid with current ratios
+  "step"               — advances one generation
+  "run"                — runs continuously until stable or button pressed again
+
+Render group A and group B in two visually distinct colors.
+Empty cells are the background color.
+
+---
 
 EvolutionViz
-  Population of dots on a 2D fitness landscape (rendered as a heatmap).
-  Each generation: low-fitness agents replaced by mutated copies of high-fitness agents.
-  changeEnvironment rerandomizes the fitness landscape.
-  Config: populationSize, showControls.
-  showControls: mutationRate (slider), selectionStrength (slider),
-    changeEnvironment (button), reset.
+File: src/components/modules/EvolutionViz.jsx
 
-Rules for all components:
-  - No external libraries. Canvas 2D or plain DOM only.
-  - All canvases follow the aspect ratio rules in AGENTS.md.
-  - Components that use existing systems: pass system class as prop,
-    never import simulation internals directly into the component.
-  - Self-contained components manage their own state with React hooks.
+A population of agents displayed on a 2D fitness landscape.
+The landscape is a heatmap rendered on a canvas — warmer colors = higher
+fitness. Agents are dots positioned on the landscape.
 
-Replace the placeholder divs in ModulePlayer with a component lookup:
+Each generation:
+  1. Evaluate each agent's fitness from the landscape at its position.
+  2. Remove the lowest 50% by fitness.
+  3. Replace them with mutated copies of surviving agents.
+     Mutation = small random offset to position, scaled by mutationRate.
+
+changeEnvironment rerandomizes the fitness landscape using a new set
+of gaussian peaks. The population must re-adapt.
+
+Accepts a config prop:
+  {
+    populationSize: number,
+    showControls: string[],
+  }
+
+showControls possible values:
+  "mutationRate"       — slider 0.01–0.5
+  "selectionStrength"  — slider 0.1–1.0 (fraction culled each generation)
+  "changeEnvironment"  — button, rerandomizes the fitness landscape
+  "reset"              — resets population and landscape
+
+---
+
+After building all six:
+
+Complete the INTERACT_COMPONENTS lookup in ModulePlayer:
 
   const INTERACT_COMPONENTS = {
     MiniGameOfLife,
@@ -456,9 +671,8 @@ Replace the placeholder divs in ModulePlayer with a component lookup:
     EvolutionViz,
   };
 
-  const InteractComponent = INTERACT_COMPONENTS[step.component];
-  if (!InteractComponent) return <div>Unknown component: {step.component}</div>;
-  return <InteractComponent config={step.config} />;
+All nine components should now be wired up. Verify that every module
+renders its INTERACT step with a real component, not a placeholder.
 
 Update README — mark Phase 5 as complete: change [ ] to [x] next to Phase 5.
 

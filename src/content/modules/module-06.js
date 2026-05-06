@@ -27,9 +27,9 @@ export const module06 = {
       type: "INTERACT",
       component: "MiniReactionDiffusion",
       config: {
-        width: 128,
-        height: 128,
-        stepsPerFrame: 10,
+        width: 300,
+        height: 300,
+        stepsPerFrame: 6,
         presets: ["spots", "stripes", "labyrinth"],
         showControls: ["preset", "reset", "feed", "kill"],
       },
