@@ -25,6 +25,8 @@ Built as a personal project to understand, visualize, and share the beauty of em
 - **Phase 2** — Downloadable high-resolution art prints `[x]`
 - **Phase 3** — Website with philosophical and technical explanations `[x]`
 - **Phase 4** — Articles scaffold `[x]`
+- **Phase 5** — Learning modules `[x]`
+- **Phase 6** — WebGL upgrade for Reaction-Diffusion `[x]`
 
 ---
 

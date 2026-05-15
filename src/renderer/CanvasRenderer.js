@@ -54,6 +54,14 @@ export class CanvasRenderer {
   }
 
   #drawReactionDiffusion(state) {
+    if (state.A instanceof Float32Array) {
+      this.#drawReactionDiffusionCPU(state);
+    } else if (state.gl) {
+      this.#drawReactionDiffusionWebGL(state);
+    }
+  }
+
+  #drawReactionDiffusionCPU(state) {
     const { width, height, A, B } = state;
     const imageData = this.ctx.createImageData(width, height);
 
@@ -75,6 +83,13 @@ export class CanvasRenderer {
 
     this.ctx.imageSmoothingEnabled = false;
     this.ctx.drawImage(sourceCanvas, 0, 0, this.canvas.width, this.canvas.height);
+  }
+
+  // WebGL path: state.gl.canvas was rendered by the display shader in getState().
+  // Blit it to the display canvas via drawImage — no CPU pixel readback.
+  #drawReactionDiffusionWebGL(state) {
+    this.ctx.imageSmoothingEnabled = false;
+    this.ctx.drawImage(state.gl.canvas, 0, 0, this.canvas.width, this.canvas.height);
   }
 
   #drawLSystem(state) {

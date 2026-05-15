@@ -4,6 +4,12 @@ Read this file at the start of every session before doing anything else.
 
 ---
 
+## Git workflow
+
+At the start of each session, create a new branch named `session-N` (e.g. `session-12`). Commit all work for that session to that branch. Do not merge — leave merging to the human.
+
+---
+
 ## What this project is
 
 A website exploring complex systems through simulations, interactive learning modules, and articles. All four simulations demonstrate emergence — global patterns arising from simple local rules. The project prioritizes visual beauty and accessibility to non-technical audiences, alongside technical depth for engineers.
@@ -30,15 +36,28 @@ destroy()      // clean up any resources (timers, GL contexts, etc.)
 React components never touch simulation internals. They only call these four methods. This is the strategy pattern — the UI layer is completely decoupled from the simulation layer.
 
 ### Why this matters
-Phase 4 introduces `WebGLReactionDiffusion.js` — a GPU-accelerated version of Gray-Scott running in a fragment shader. Because it implements the same interface, no UI code needs to change. This is the architectural payoff of the pattern. Do not break this contract.
+Phase 6 introduces `WebGLReactionDiffusion.js` — a GPU-accelerated version of Gray-Scott running in a fragment shader. Because it implements the same interface, no UI code needs to change. This is the architectural payoff of the pattern. Do not break this contract.
+
+### getState() type discriminant
+All `getState()` implementations must include a `type: string` field. `CanvasRenderer` routes on this field — do not remove it or change the values. Valid type strings:
+
+- `'game-of-life'` — GameOfLife.js
+- `'reaction-diffusion'` — ReactionDiffusion.js and WebGLReactionDiffusion.js
+- `'l-system'` — LSystem.js
+- `'boids'` — Boids.js
+
+When two implementations share the same type string (ReactionDiffusion and WebGLReactionDiffusion both return `'reaction-diffusion'`), CanvasRenderer distinguishes them by inspecting a secondary field: `state.texture instanceof WebGLTexture` for the GPU path, `state.A instanceof Float32Array` for the CPU path.
 
 ### CanvasRenderer
-`CanvasRenderer.js` is the only place that knows how to draw. It calls `getState()` each frame and draws accordingly. It detects which system it is drawing from the shape of the state object. Simulation classes know nothing about rendering.
+`CanvasRenderer.js` is the only place that knows how to draw. It calls `getState()` each frame and draws accordingly. It routes on `state.type` first, then on secondary fields where needed. Simulation classes know nothing about rendering.
 
 ### React components
 - Never import simulation internals directly
 - Pass system class as a prop, not an instance
 - All config changes go through `init()` — never mutate system state directly
+
+### MiniReactionDiffusion uses Canvas 2D intentionally
+The `MiniReactionDiffusion` component in the learning modules uses the original `ReactionDiffusion` class, not `WebGLReactionDiffusion`. This is deliberate: the mini component runs at a small grid size where CPU performance is fine, and WebGL requires exclusive ownership of the canvas context (`getContext('webgl')` conflicts with `getContext('2d')`). Do not change this.
 
 ---
 
@@ -80,7 +99,7 @@ Cells and simulation visuals must always render as squares, never as stretched r
 - Default angle: 25°
 - Five presets: Fern, Algae, Bush, Dragon curve, Sierpinski triangle
 - step() does nothing — L-systems are not time-stepped
-- getState() returns { string, drawParams }
+- getState() returns { type: 'l-system', string, drawParams }
 
 ### Boids
 - Agent count: 80
@@ -93,7 +112,7 @@ Cells and simulation visuals must always render as squares, never as stretched r
 - Alignment weight: 1.0
 - Cohesion weight: 1.0
 - Toroidal wrapping
-- getState() returns array of { x, y, vx, vy }
+- getState() returns array of { x, y, vx, vy } — wait, returns { type: 'boids', agents: [...] }
 
 ---
 
@@ -102,48 +121,50 @@ Cells and simulation visuals must always render as squares, never as stretched r
 ```
 src/
   systems/
-    ISimulation.js          # JSDoc interface definition
+    ISimulation.js                     # JSDoc interface definition
     GameOfLife.js
     ReactionDiffusion.js
     LSystem.js
     Boids.js
-    WebGLReactionDiffusion.js  # Phase 4 only
+    WebGLReactionDiffusion.js          # Phase 6
   renderer/
     CanvasRenderer.js
-    PrintRenderer.js           # Phase 2
+    PrintRenderer.js                   # Phase 2
   components/
-    Nav.jsx                       # Phase 3
+    Nav.jsx                            # Phase 3
     SimulationView.jsx
     Controls.jsx
     TheoryPanel.jsx
     CaptureButton.jsx
     modules/
-      ModulePlayer.jsx            # Phase 5
-      GameOfLifePredictor.jsx     # Phase 5
-      MiniGameOfLife.jsx          # Phase 5
-      MiniBoids.jsx               # Phase 5
+      ModulePlayer.jsx                 # Phase 5
+      GameOfLifePredictor.jsx          # Phase 5
+      MiniGameOfLife.jsx               # Phase 5
+      MiniBoids.jsx                    # Phase 5
+      MiniReactionDiffusion.jsx        # Phase 5 — uses CPU ReactionDiffusion intentionally
   pages/
-    Home.jsx                      # Phase 3
-    Explore.jsx                   # Phase 3
-    SystemPage.jsx                # Phase 3
-    About.jsx                     # Phase 3
-    Articles.jsx                  # Phase 4
-    ArticlePage.jsx               # Phase 4
-    Learn.jsx                     # Phase 5
-    ModulePage.jsx                # Phase 5
+    Home.jsx                           # Phase 3
+    Explore.jsx                        # Phase 3
+    SystemPage.jsx                     # Phase 3
+    About.jsx                          # Phase 3
+    Articles.jsx                       # Phase 4
+    ArticlePage.jsx                    # Phase 4
+    Learn.jsx                          # Phase 5
+    ModulePage.jsx                     # Phase 5
   data/
     systemContent.js
     printPresets.js
-    articles.js                   # Phase 4
-    modules.js                    # Phase 5
+    articles.js                        # Phase 4
+    modules.js                         # Phase 5
   content/
-    articles/                     # Phase 4 — one .js file per article
+    articles/                          # Phase 4 — one .js file per article
   utils/
     exportCanvas.js
 tests/
   GameOfLife.test.js
   Boids.test.js
   exportCanvas.test.js
+  CanvasRenderer.test.js               # Session 12
 ```
 
 ---
@@ -166,8 +187,8 @@ Current phases:
 - Phase 2 — Downloadable high-res prints [x]
 - Phase 3 — Website (routing, pages, about, deploy) [x]
 - Phase 4 — Articles scaffold [x]
-- Phase 5 — Learning modules [ ]
-- Phase 6 — WebGL upgrade [ ]
+- Phase 5 — Learning modules [x]
+- Phase 6 — WebGL upgrade [x]
 
 ---
 
