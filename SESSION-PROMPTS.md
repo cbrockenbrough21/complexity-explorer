@@ -522,7 +522,7 @@ could be misidentified. Replace shape inference with an explicit type field.
 5. Run all tests. All must pass.
 
 --
-### Session 13 — WebGL upgrade for Reaction-Diffusion
+### Session 13a — WebGL upgrade for Reaction-Diffusion
 Read AGENTS.md carefully before doing anything.
 Read the README to confirm Phase 5 is complete and the Session 12 fix is in.
 Task: Phase 6 — GPU-accelerated Reaction-Diffusion.
@@ -603,3 +603,68 @@ back to the existing `ReactionDiffusion` class with no user-facing error.
 6. Update README — mark Phase 6 as complete.
 
 7. Run all tests. All must pass.
+
+### Session 13b — Benchmark WebGL Reaction-Diffusion grid sizes
+The WebGL implementation is now complete. We need to find
+the best default grid size based on real performance data.
+
+1. Find every place ReactionDiffusion or WebGLReactionDiffusion is instantiated
+   in the codebase, including the home page and any module/preview components.
+   Show me the file, the grid size each one uses, and whether it is the main
+   Explore view or a smaller preview.
+
+2. Add a temporary benchmark mode to the Explore view only. Gate everything
+   behind a URL param (?benchmark=1) so no production code paths are touched.
+   When the param is present:
+   - Test grid sizes 256x256, 512x512, 768x768, and 1024x1024
+   - Run each for 60 frames, measuring actual frame time using performance.now()
+   - Display results on screen as a simple overlay showing grid size and average fps
+   - Clean up after itself completely when the param is absent
+
+3. Once I have run the benchmark in the browser and shared the fps results,
+   update the default grid size in WebGLReactionDiffusion.js to whichever size
+   runs comfortably at 60fps, then remove all benchmark code.
+
+4. Run all tests. All must pass.
+
+---
+
+## Phase 7 — Simulation lifecycle hardening
+
+---
+
+### Session 14 — Tab visibility pause/resume
+
+```
+Read AGENTS.md carefully before doing anything.
+
+Task: Simulation lifecycle hardening.
+
+The animation loop in SimulationView.jsx already pauses and resumes via
+pausedRef. This session adds one improvement: pause the loop automatically
+when the browser tab is backgrounded, and resume it when the tab returns
+to the foreground.
+
+1. In SimulationView.jsx, inside the useEffect that sets up the animation
+   loop, add a visibilitychange listener on document:
+
+   const handleVisibilityChange = () => {
+     pausedRef.current = document.hidden;
+   };
+   document.addEventListener("visibilitychange", handleVisibilityChange);
+
+   Remove the listener in the existing cleanup return:
+
+   document.removeEventListener("visibilitychange", handleVisibilityChange);
+
+   The listener must be added after pausedRef is initialized and before
+   rafId is set. The cleanup must run cancelAnimationFrame, destroy the
+   renderer and system, AND remove the event listener — all four, in that
+   order.
+
+2. Do not change any other behavior. The existing pause/resume controls,
+   the frame counter, and all other SimulationView logic must remain
+   identical.
+
+3. Run all existing tests. All must pass.
+```

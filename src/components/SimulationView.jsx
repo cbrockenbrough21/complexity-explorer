@@ -26,6 +26,11 @@ export default function SimulationView({ systemClass, initialConfig = {}, onSyst
     pausedRef.current = false;
     setCounter({ frame: 0, generation: 0 });
 
+    const handleVisibilityChange = () => {
+      pausedRef.current = document.hidden;
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     if (typeof onSystemReady === "function") {
       onSystemReady(system, {
         applyConfig: (config) => {
@@ -94,6 +99,7 @@ export default function SimulationView({ systemClass, initialConfig = {}, onSyst
       cancelAnimationFrame(rafId);
       renderer.destroy();
       system.destroy();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [systemClass]);
 
