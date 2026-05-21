@@ -62,10 +62,11 @@ export class ReactionDiffusion extends ISimulation {
   }
 
   /**
-   * @returns {{width:number,height:number,A:Float32Array,B:Float32Array}}
+   * @returns {{type:string,width:number,height:number,A:Float32Array,B:Float32Array}}
    */
   getState() {
     return {
+      type: 'reaction-diffusion',
       width: this.config.width,
       height: this.config.height,
       A: this.A,

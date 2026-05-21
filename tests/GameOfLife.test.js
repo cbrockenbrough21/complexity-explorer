@@ -13,7 +13,7 @@ describe("GameOfLife rules", () => {
     const gol = new GameOfLife({ seedGrid: grid, initialDensity: 0 });
     gol.step();
 
-    expect(gol.getState()[2][2]).toBe(0);
+    expect(gol.getState().grid[2][2]).toBe(0);
   });
 
   it("survival: a live cell with 2-3 neighbors lives", () => {
@@ -25,7 +25,7 @@ describe("GameOfLife rules", () => {
     const gol = new GameOfLife({ seedGrid: grid, initialDensity: 0 });
     gol.step();
 
-    expect(gol.getState()[2][2]).toBe(1);
+    expect(gol.getState().grid[2][2]).toBe(1);
   });
 
   it("overcrowding: a live cell with more than 3 neighbors dies", () => {
@@ -39,7 +39,7 @@ describe("GameOfLife rules", () => {
     const gol = new GameOfLife({ seedGrid: grid, initialDensity: 0 });
     gol.step();
 
-    expect(gol.getState()[2][2]).toBe(0);
+    expect(gol.getState().grid[2][2]).toBe(0);
   });
 
   it("birth: a dead cell with exactly 3 neighbors becomes alive", () => {
@@ -51,6 +51,6 @@ describe("GameOfLife rules", () => {
     const gol = new GameOfLife({ seedGrid: grid, initialDensity: 0 });
     gol.step();
 
-    expect(gol.getState()[2][2]).toBe(1);
+    expect(gol.getState().grid[2][2]).toBe(1);
   });
 });

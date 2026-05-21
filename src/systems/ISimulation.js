@@ -24,7 +24,9 @@ export class ISimulation {
 
   /**
    * Return the current simulation state.
-   * @returns {*} State payload consumed by renderers.
+   * All implementations must include a `type: string` discriminant field.
+   * `CanvasRenderer` routes on this field to select the correct drawing path.
+   * @returns {{type: string}} State payload consumed by renderers. Must include `type`.
    */
   getState() {
     throw new Error("getState() must be implemented by simulation classes.");

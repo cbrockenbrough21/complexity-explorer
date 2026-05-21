@@ -15,27 +15,28 @@ export class CanvasRenderer {
   render() {
     const state = this.system.getState();
 
-    if (this.#isReactionDiffusionState(state)) {
-      this.#drawReactionDiffusion(state);
-      return;
+    switch (state?.type) {
+      case 'game-of-life':
+        this.#drawGameOfLife(state);
+        break;
+      case 'reaction-diffusion':
+        this.#drawReactionDiffusion(state);
+        break;
+      case 'l-system':
+        this.#drawLSystem(state);
+        break;
+      case 'boids':
+        this.#drawBoids(state);
+        break;
+      default:
+        console.warn(`CanvasRenderer: unknown state type "${state?.type}"`);
     }
+  }
 
-    if (this.#isLSystemState(state)) {
-      this.#drawLSystem(state);
-      return;
-    }
-
-    if (this.#isBoidsState(state)) {
-      this.#drawBoids(state);
-      return;
-    }
-
-    if (!this.#isGridState(state)) {
-      return;
-    }
-
-    const rows = state.length;
-    const cols = state[0].length;
+  #drawGameOfLife(state) {
+    const { grid } = state;
+    const rows = grid.length;
+    const cols = grid[0].length;
     const cellWidth = this.canvas.width / cols;
     const cellHeight = this.canvas.height / rows;
 
@@ -45,40 +46,11 @@ export class CanvasRenderer {
     this.ctx.fillStyle = "#22c55e";
     for (let y = 0; y < rows; y += 1) {
       for (let x = 0; x < cols; x += 1) {
-        if (state[y][x] === 1) {
+        if (grid[y][x] === 1) {
           this.ctx.fillRect(x * cellWidth, y * cellHeight, cellWidth, cellHeight);
         }
       }
     }
-  }
-
-  #isGridState(state) {
-    return Array.isArray(state) && state.length > 0 && Array.isArray(state[0]);
-  }
-
-  #isReactionDiffusionState(state) {
-    return (
-      !!state &&
-      typeof state.width === "number" &&
-      typeof state.height === "number" &&
-      state.A instanceof Float32Array &&
-      state.B instanceof Float32Array
-    );
-  }
-
-  #isLSystemState(state) {
-    return !!state && typeof state.string === "string" && typeof state.drawParams === "object";
-  }
-
-  #isBoidsState(state) {
-    return (
-      Array.isArray(state) &&
-      (state.length === 0 ||
-        (typeof state[0].x === "number" &&
-          typeof state[0].y === "number" &&
-          typeof state[0].vx === "number" &&
-          typeof state[0].vy === "number"))
-    );
   }
 
   #drawReactionDiffusion(state) {
@@ -196,7 +168,7 @@ export class CanvasRenderer {
     const tail = 6 * shapeScale;
     const halfTailHeight = 4 * shapeScale;
 
-    for (const boid of state) {
+    for (const boid of state.agents) {
       const angle = Math.atan2(boid.vy, boid.vx);
       this.ctx.save();
       this.ctx.translate(boid.x * scaleX, boid.y * scaleY);

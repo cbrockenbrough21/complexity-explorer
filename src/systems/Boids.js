@@ -81,10 +81,10 @@ export class Boids extends ISimulation {
   }
 
   /**
-   * @returns {Array<{x:number,y:number,vx:number,vy:number}>}
+   * @returns {{type:string,agents:Array<{x:number,y:number,vx:number,vy:number}>}}
    */
   getState() {
-    return this.boids;
+    return { type: 'boids', agents: this.boids };
   }
 
   destroy() {

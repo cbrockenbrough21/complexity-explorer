@@ -13,7 +13,7 @@ describe("Boids steering forces", () => {
     });
 
     const state = boids.getState();
-    const force = boids.computeSeparationForce(state[0], 0, state);
+    const force = boids.computeSeparationForce(state.agents[0], 0, state.agents);
 
     expect(force.x).toBeLessThan(0);
     expect(Math.abs(force.y)).toBeLessThan(1e-9);
@@ -31,7 +31,7 @@ describe("Boids steering forces", () => {
     });
 
     const state = boids.getState();
-    const force = boids.computeAlignmentForce(state[0], 0, state);
+    const force = boids.computeAlignmentForce(state.agents[0], 0, state.agents);
 
     expect(force.x).toBeGreaterThan(0);
     expect(Math.abs(force.y)).toBeLessThan(1e-9);
@@ -50,7 +50,7 @@ describe("Boids steering forces", () => {
     });
 
     const state = boids.getState();
-    const force = boids.computeCohesionForce(state[0], 0, state);
+    const force = boids.computeCohesionForce(state.agents[0], 0, state.agents);
 
     expect(force.x).toBeGreaterThan(0);
     expect(force.y).toBeGreaterThan(0);

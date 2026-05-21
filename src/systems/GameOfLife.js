@@ -71,10 +71,10 @@ export class GameOfLife extends ISimulation {
   }
 
   /**
-   * @returns {number[][]}
+   * @returns {{type:string,grid:number[][]}}
    */
   getState() {
-    return this.grid;
+    return { type: 'game-of-life', grid: this.grid };
   }
 
   /**

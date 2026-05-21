@@ -155,10 +155,11 @@ export class LSystem extends ISimulation {
   step() {}
 
   /**
-   * @returns {{string:string,drawParams:Object}}
+   * @returns {{type:string,string:string,drawParams:Object}}
    */
   getState() {
     return {
+      type: 'l-system',
       string: this.currentString,
       drawParams: this.drawParams
     };
