@@ -27,3 +27,15 @@
   color: var(--color-muted, #888);
   margin-bottom: 1rem;
 }
+
+.nextLink {
+  display: inline-block;
+  margin-top: 3rem;
+  font-size: 0.9rem;
+  color: var(--color-muted, #555);
+  text-decoration: none;
+}
+
+.nextLink:hover {
+  text-decoration: underline;
+}
