@@ -26,24 +26,17 @@ export default function ModulePlayer({ module }) {
             </div>
           )}
 
-          {step.type === "INTERACT" && (
-            <div className={styles.interact}>
-              {(() => {
-                const entry = INTERACT_COMPONENTS[step.component];
-                if (entry) {
-                  const { Component, SystemClass } = entry;
-                  return <Component SystemClass={SystemClass} config={step.config} />;
-                }
-                return (
-                  <div className={styles.interactPlaceholder}>
-                    <span>{step.component}</span>
-                    <span>Interactive component — coming soon</span>
-                  </div>
-                );
-              })()}
-              {step.prompt && <p className={styles.prompt}>{step.prompt}</p>}
-            </div>
-          )}
+          {step.type === "INTERACT" && (() => {
+            const entry = INTERACT_COMPONENTS[step.component];
+            if (!entry) return null;
+            const { Component, SystemClass } = entry;
+            return (
+              <div className={styles.interact}>
+                <Component SystemClass={SystemClass} config={step.config} />
+                {step.prompt && <p className={styles.prompt}>{step.prompt}</p>}
+              </div>
+            );
+          })()}
 
           {step.type === "REFLECT" && (
             <div className={styles.reflect}>

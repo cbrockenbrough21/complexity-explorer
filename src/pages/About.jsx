@@ -25,7 +25,7 @@ export default function About() {
             <p className={styles.body}>
               A flock of starlings. A language evolving over centuries. A pattern
               forming on the skin of a zebrafish. The way a single cell becomes a
-              brain. These things weren't designed from the top down — they came out
+              brain. These things weren't designed from the top down. They came out
               of local interactions, feedback, and some randomness along the way.
             </p>
 
@@ -33,7 +33,7 @@ export default function About() {
               These kinds of systems show up everywhere: biology, markets, how ideas
               spread, what it means to have agency inside something much larger than
               yourself. This project is an attempt to make some of those dynamics
-              visible and tangible — through simulations, interactive modules, and
+              visible and tangible through simulations, interactive modules, and
               writing.
             </p>
           </div>

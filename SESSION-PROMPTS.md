@@ -668,3 +668,57 @@ to the foreground.
 
 3. Run all existing tests. All must pass.
 ```
+
+## Phase 8 — Polish and module cleanup
+
+---
+
+### Session 15 — Nav cleanup, silent fallback, next-module navigation
+
+```
+Read AGENTS.md carefully before doing anything.
+
+Task: Phase 8, Session 1.
+
+---
+
+1. src/components/Nav.jsx (or NavBar.jsx — check which filename exists)
+   Remove the Articles entry from the nav links array:
+     { to: "/articles", label: "Articles" }
+   Do not remove the routes from App.jsx. The /articles URL should still
+   resolve if visited directly — just not linked from the nav.
+
+---
+
+2. src/components/modules/ModulePlayer.jsx
+   Currently, when a component name in an INTERACT step is not found in
+   INTERACT_COMPONENTS, the fallback renders a placeholder div and the
+   step's prompt text.
+
+   Change this: if the component is not found in INTERACT_COMPONENTS,
+   render nothing for that entire step — no placeholder div, no prompt.
+   The module should read as if the INTERACT step is simply absent.
+
+   Do not change behavior for steps whose component IS found.
+
+---
+
+3. src/pages/ModulePage.jsx
+   Add a next-module link at the bottom of the page, below ModulePlayer.
+
+   Logic:
+   - Import MODULES from src/data/modules.js
+   - Find the index of the current module in MODULES by matching module.id
+   - If a next module exists (index + 1 is within bounds), render a link
+     to /learn/[nextModule.id] labeled "Next: [nextModule.title]"
+   - If the current module is the last in the array, render a link to
+     /learn labeled "← Back to all modules"
+
+   Style it consistently with any existing navigation links on the page.
+   Give it enough top margin that it reads as a natural end to the page
+   rather than something tacked on.
+
+---
+
+4. Run all tests. All must pass.
+```
