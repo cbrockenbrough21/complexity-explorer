@@ -479,202 +479,127 @@ Run all tests. All must pass.
 
 ---
 
-### Session 11b — Interactive components (self-contained)
+## Phase 6
 
-```
+### Session 12 — getState() type discriminant
+
 Read AGENTS.md carefully before doing anything.
-Read the README to confirm Phase 5 Session 3a is complete.
+Read the README to confirm Phase 5 is complete.
 
-Task: Phase 5, Session 3b.
+Task: Architectural fix — add explicit type discriminants to all getState() returns.
 
-Build the six self-contained interactive components. Each lives in
-src/components/modules/. Each manages its own state with React hooks.
-No ISimulation interface. Canvas 2D or plain DOM only. No external libraries.
-All canvases follow the aspect ratio rules in AGENTS.md.
+The current CanvasRenderer detects which system it is drawing by inspecting
+the shape of the state object (field names, array types). This works for four
+known systems but is fragile — a new system that happens to share field names
+could be misidentified. Replace shape inference with an explicit type field.
 
----
+1. Update each simulation class to include a `type` string in its getState()
+   return value. Use these exact strings:
 
-FeedbackLoopViz
-File: src/components/modules/FeedbackLoopViz.jsx
+   GameOfLife.js     → type: 'game-of-life'
+   ReactionDiffusion.js → type: 'reaction-diffusion'
+   LSystem.js        → type: 'l-system'
+   Boids.js          → type: 'boids'
 
-Simulates a value evolving over time under positive or negative feedback.
-Renders a live time-series line on a canvas. The line updates continuously.
+   No other changes to these files. The type field is appended to the existing
+   return object — do not restructure getState() returns.
 
-Positive feedback: value moves away from center, grows or shrinks toward
-the boundary. Negative feedback: value is pulled back toward the midpoint.
+2. Update CanvasRenderer.js to route on state.type instead of the four
+   private shape-detection methods (#isGridState, #isReactionDiffusionState,
+   #isLSystemState, #isBoidsState). Replace them with a single switch or
+   if-chain on state.type. Log a clear warning to the console if an unknown
+   type is encountered rather than silently doing nothing.
 
-Accepts a config prop:
-  {
-    initialValue: number,   // starting value, e.g. 50
-    minValue: number,       // e.g. 0
-    maxValue: number,       // e.g. 100
-    showControls: string[],
-  }
+3. Update the JSDoc on ISimulation.js to note that all getState()
+   implementations must include a type: string field. Add it as a documented
+   requirement on the interface.
 
-showControls possible values:
-  "feedbackType"     — toggle button: "positive" / "negative"
-  "feedbackStrength" — slider 0.0–1.0
-  "reset"            — resets value to initialValue, clears the line
+4. Add a test in tests/CanvasRenderer.test.js (create this file) that
+   instantiates a mock system returning each of the four known type strings
+   and confirms the renderer calls the correct drawing path without throwing.
+   Use a headless canvas (install canvas package if not already present).
 
----
+5. Run all tests. All must pass.
 
-LogisticMapViz
-File: src/components/modules/LogisticMapViz.jsx
+--
+### Session 13 — WebGL upgrade for Reaction-Diffusion
+Read AGENTS.md carefully before doing anything.
+Read the README to confirm Phase 5 is complete and the Session 12 fix is in.
+Task: Phase 6 — GPU-accelerated Reaction-Diffusion.
+The goal is to replace the Canvas 2D Reaction-Diffusion renderer with a
+WebGL 2 fragment shader implementation, gaining ~10-50x performance and making
+large grid sizes (512×512, 1024×1024) real-time feasible. Because all
+simulation classes implement ISimulation, no UI code should need to change.
+If WebGL 2 is unavailable (`getContext('webgl2')` returns null), silently fall
+back to the existing `ReactionDiffusion` class with no user-facing error.
 
-Renders the logistic map: x(n+1) = r * x(n) * (1 - x(n)).
-Displays a time series on a canvas, updated each frame.
-Starting value is always 0.5 unless twoTrajectories is enabled.
+1. Create src/systems/WebGLReactionDiffusion.js implementing the ISimulation
+   interface exactly. Read ReactionDiffusion.js before writing this file and
+   match all default config values exactly. Config shape is identical to
+   ReactionDiffusion.js (width, height, feed, kill, dA, dB, dt, stepsPerFrame,
+   patchCount, patchSizeMin, patchSizeMax) so it is a drop-in replacement.
+   - init(config): sets up the WebGL 2 context on an offscreen canvas, compiles
+     shaders, and allocates two ping-pong RGBA32F floating-point textures (A
+     concentration in the red channel, B concentration in the green channel).
+     Seeds initial state by generating a CPU-side Float32Array matching the same
+     random patch logic as ReactionDiffusion.js (#seedRandomPatches: fills A=1
+     everywhere, then places patchCount square patches of B=1/A=0 with random
+     center and radius between patchSizeMin and patchSizeMax, with toroidal
+     wrapping), then uploads it via texImage2D.
+   - step(): runs exactly stepsPerFrame ping-pong passes of the simulation
+     fragment shader per call, matching the CPU version's behavior precisely.
+     Each pass reads from the current texture and writes to the other, then
+     swaps. Uses NEAREST filtering and REPEAT wrap mode for toroidal boundary
+     conditions.
+   - getState(): returns { type: 'reaction-diffusion', width, height, texture }
+     where texture is the WebGLTexture containing the current state. Does NOT
+     read pixels back to the CPU — the renderer reads from the texture directly.
+   - destroy(): deletes all WebGL resources (textures, framebuffers, programs,
+     the offscreen canvas).
+   Vertex shader: full-screen quad covering clip space using two triangles.
+   Outputs a vUv varying for texture coordinates.
+   Simulation fragment shader: reads A and B from the input texture (A in .r,
+   B in .g). Implements the 8-neighbor weighted discrete Laplacian matching
+   ReactionDiffusion.js exactly (center weight -1.0, cardinal neighbors 0.2
+   each, diagonal neighbors 0.05 each). Applies Gray-Scott equations:
+     reaction = A * B * B
+     newA = A + (dA * lapA - reaction + feed * (1.0 - A)) * dt
+     newB = B + (dB * lapB + reaction - (kill + feed) * B) * dt
+   Clamps both outputs to [0, 1]. Toroidal wrapping via mod(). Uniforms:
+   uState (sampler2D), uResolution (vec2), uFeed, uKill, uDA, uDB, uDT.
+   Display fragment shader: maps A and B to the exact same color scheme as
+   CanvasRenderer.js #drawReactionDiffusion. The CPU path computes
+   val = clamp((A - B) * 255, 0, 255), R = val, G = clamp(val + 30, 0, 255),
+   B = 220. Translated to GLSL:
+     vec2 ab = texture(uState, vUv).rg;
+     float val = clamp(ab.r - ab.g, 0.0, 1.0);
+     gl_FragColor = vec4(val, clamp(val + 30.0/255.0, 0.0, 1.0), 220.0/255.0, 1.0);
 
-When twoTrajectories is enabled: plot two trajectories starting at
-0.500 and 0.501 in two different colors on the same axes.
+2. Update CanvasRenderer.js to handle both paths. #drawReactionDiffusion
+   already handles the CPU path (state.A and state.B as Float32Arrays). Add a
+   WebGL path: when state.texture is present (and state.A is absent), blit the
+   WebGLTexture to the display canvas using a simple WebGL 2 context on the
+   display canvas, running the display fragment shader described above. When
+   state.A is a Float32Array, keep the existing CPU pixel-write path entirely
+   unchanged so MiniReactionDiffusion continues to work without WebGL.
 
-Accepts a config prop:
-  {
-    initialR: number,   // e.g. 2.5
-    minR: number,       // e.g. 1.0
-    maxR: number,       // e.g. 4.0
-    showControls: string[],
-  }
+3. Update src/data/systemContent.js — in the reaction-diffusion entry, update
+   the forEngineers text to describe the WebGL 2 implementation: mention the
+   ping-pong texture approach (two RGBA32F textures swapped each pass so the
+   GPU never reads and writes the same texture simultaneously), the Gray-Scott
+   fragment shader, the ~10-50x speedup over the Canvas 2D path, and that
+   MiniReactionDiffusion intentionally keeps the CPU implementation for its
+   smaller grid size.
 
-showControls possible values:
-  "rSlider"          — slider from minR to maxR, step 0.01
-  "twoTrajectories"  — checkbox, enables the two-trajectory mode
-  "reset"            — clears the plot, restarts from x=0.5
+4. Update the system selector in Explore.jsx (or wherever ReactionDiffusion
+   is instantiated as the active system) to use WebGLReactionDiffusion instead.
+   The fallback inside WebGLReactionDiffusion handles the no-WebGL-2 case
+   transparently. Do not change MiniReactionDiffusion or any module components.
 
----
+5. Update AGENTS.md — add WebGLReactionDiffusion.js to the known file structure
+   and note that MiniReactionDiffusion uses the Canvas 2D implementation
+   intentionally (smaller grid, no need for GPU overhead).
 
-DesirePathViz
-File: src/components/modules/DesirePathViz.jsx
+6. Update README — mark Phase 6 as complete.
 
-Grid-based. Agents spawn on the left edge and move toward the right edge.
-Each agent deposits pheromone on the cells it visits. Subsequent agents
-are attracted to stronger pheromone trails, with some randomness.
-Pheromone fades slowly over time.
-
-Accepts a config prop:
-  {
-    gridWidth: number,
-    gridHeight: number,
-    agentCount: number,
-    showControls: string[],
-  }
-
-showControls possible values:
-  "addAgents"      — button, adds 10 more agents
-  "clearPaths"     — button, resets all pheromone to zero
-  "reset"          — resets agents and pheromone, restarts
-  "showPheromones" — toggle, shows pheromone intensity as a heatmap overlay
-
----
-
-NetworkViz
-File: src/components/modules/NetworkViz.jsx
-
-Displays a node-edge graph rendered on a canvas.
-Nodes are positioned using a simple force-directed layout or fixed
-positions — either is acceptable as long as the graph is readable.
-
-Supports three topologies:
-  "random"     — edges assigned randomly, uniform degree distribution
-  "smallWorld" — high clustering and short path lengths (Watts-Strogatz)
-  "scaleFree"  — few hubs with many connections, most nodes with few
-                 (preferential attachment)
-
-Cascade mode: when a node is clicked, highlight in a distinct color
-which other nodes would become unreachable if that node were removed.
-
-Accepts a config prop:
-  {
-    nodeCount: number,
-    initialTopology: string,
-    showControls: string[],
-  }
-
-showControls possible values:
-  "topology"   — dropdown: random / smallWorld / scaleFree, regenerates graph
-  "addHub"     — button, adds one high-degree node connected to 5 existing nodes
-  "removeHub"  — button, removes the highest-degree node
-  "cascade"    — toggle, enables click-to-cascade mode
-  "reset"      — regenerates graph with current topology
-
----
-
-SchellingViz
-File: src/components/modules/SchellingViz.jsx
-
-Grid of agents in two groups (A and B) plus empty cells.
-Each step: any agent whose fraction of same-type neighbors is below
-the tolerance threshold moves to a random empty cell.
-
-Accepts a config prop:
-  {
-    gridSize: number,       // e.g. 30 — renders as gridSize x gridSize
-    groupARatio: number,    // e.g. 0.45
-    groupBRatio: number,    // e.g. 0.45 — remainder are empty cells
-    showControls: string[],
-  }
-
-showControls possible values:
-  "toleranceThreshold" — slider 0.0–1.0, step 0.05
-  "reset"              — reinitializes grid with current ratios
-  "step"               — advances one generation
-  "run"                — runs continuously until stable or button pressed again
-
-Render group A and group B in two visually distinct colors.
-Empty cells are the background color.
-
----
-
-EvolutionViz
-File: src/components/modules/EvolutionViz.jsx
-
-A population of agents displayed on a 2D fitness landscape.
-The landscape is a heatmap rendered on a canvas — warmer colors = higher
-fitness. Agents are dots positioned on the landscape.
-
-Each generation:
-  1. Evaluate each agent's fitness from the landscape at its position.
-  2. Remove the lowest 50% by fitness.
-  3. Replace them with mutated copies of surviving agents.
-     Mutation = small random offset to position, scaled by mutationRate.
-
-changeEnvironment rerandomizes the fitness landscape using a new set
-of gaussian peaks. The population must re-adapt.
-
-Accepts a config prop:
-  {
-    populationSize: number,
-    showControls: string[],
-  }
-
-showControls possible values:
-  "mutationRate"       — slider 0.01–0.5
-  "selectionStrength"  — slider 0.1–1.0 (fraction culled each generation)
-  "changeEnvironment"  — button, rerandomizes the fitness landscape
-  "reset"              — resets population and landscape
-
----
-
-After building all six:
-
-Complete the INTERACT_COMPONENTS lookup in ModulePlayer:
-
-  const INTERACT_COMPONENTS = {
-    MiniGameOfLife,
-    MiniBoids,
-    MiniReactionDiffusion,
-    FeedbackLoopViz,
-    LogisticMapViz,
-    DesirePathViz,
-    NetworkViz,
-    SchellingViz,
-    EvolutionViz,
-  };
-
-All nine components should now be wired up. Verify that every module
-renders its INTERACT step with a real component, not a placeholder.
-
-Update README — mark Phase 5 as complete: change [ ] to [x] next to Phase 5.
-
-Run all tests. All must pass.
-```
+7. Run all tests. All must pass.

@@ -1,5 +1,5 @@
 import { GameOfLife } from "../systems/GameOfLife.js";
-import { ReactionDiffusion } from "../systems/ReactionDiffusion.js";
+import { WebGLReactionDiffusion } from "../systems/WebGLReactionDiffusion.js";
 import { LSystem } from "../systems/LSystem.js";
 import { Boids } from "../systems/Boids.js";
 
@@ -19,7 +19,7 @@ export const SYSTEMS = {
   reactionDiffusion: {
     id: "reactionDiffusion",
     label: "Reaction-Diffusion",
-    classRef: ReactionDiffusion,
+    classRef: WebGLReactionDiffusion,
     defaultConfig: {
       width: 256,
       height: 256,
